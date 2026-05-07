@@ -256,7 +256,7 @@ router.get('/status', async (req, res) => {
 
 // ── POST /api/banana/generate ─────────────────────────────────────────────────
 router.post('/generate', async (req, res) => {
-  const { prompt, aspectRatio = '1:1' } = req.body;
+  const { prompt, aspectRatio = 'auto', resolution = '1K', imageCount = 1 } = req.body;
   if (!prompt) return res.json({ ok: false, error: '請提供 prompt' });
 
   let page;
@@ -264,57 +264,109 @@ router.post('/generate', async (req, res) => {
     const ctx = await getBrowserContext();
     page = await ctx.newPage();
 
-    // Gemini 3.1 Flash Image 的直接頁面
     await page.goto(`${BASE_URL}/image/gemini-3-1-flash-image/`, {
       waitUntil: 'networkidle',
       timeout: 20000,
     });
 
-    // If redirected to login, session expired
     if (page.url().includes('login') || await page.locator('button:has-text("登入")').count() > 0) {
       throw new Error('Session 已過期，請重新登入');
     }
 
-    const promptInput = page.locator(
-      'textarea, input[placeholder*="prompt" i], input[placeholder*="描述" i], input[placeholder*="Describe" i], input[type="text"]'
-    ).first();
+    // Dismiss cookie banner if present
+    try {
+      await page.locator('button:has-text("全部接受")').first().click({ timeout: 3000 });
+      await page.waitForTimeout(500);
+    } catch { /* no banner */ }
+
+    // Click aspect ratio button (label: '自動' for auto, else the ratio string)
+    const ratioLabel = aspectRatio === 'auto' ? '自動' : aspectRatio;
+    try {
+      await page.getByRole('button', { name: ratioLabel, exact: true }).first().click({ timeout: 5000 });
+    } catch { /* keep default */ }
+
+    // Click resolution button
+    try {
+      await page.getByRole('button', { name: resolution, exact: true }).first().click({ timeout: 5000 });
+    } catch { /* keep default */ }
+
+    // Click image count button (scope to section near '圖片數量' label)
+    try {
+      const countParent = page.locator('text=圖片數量').locator('../..');
+      await countParent.getByRole('button', { name: String(imageCount), exact: true }).first().click({ timeout: 5000 });
+    } catch { /* keep default */ }
+
+    // Record existing image srcs before generating
+    const existingImgSrcs = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('img[src]')).map(img => img.src)
+    );
+
+    // Fill prompt
+    const promptInput = page.locator('textarea').first();
     await promptInput.waitFor({ timeout: 10000 });
     await promptInput.fill(prompt);
 
-    await page.locator(
-      'button:has-text("Generate"), button:has-text("生成"), button:has-text("Create"), button:has-text("產生")'
-    ).first().click();
+    // Click generate
+    await page.getByRole('button', { name: '生成 圖片' }).click();
 
-    const resultImg = page.locator(
-      '.result img, .output img, [class*="result"] img, [class*="generated"] img, img[src*="cdn"], img[src*="storage"]'
-    ).last();
-    await resultImg.waitFor({ timeout: 90000 });
+    // Wait for new images to appear (up to 120s)
+    await page.waitForFunction(
+      (existing) => {
+        const imgs = Array.from(document.querySelectorAll('img[src]'));
+        return imgs.some(img => {
+          const src = img.src;
+          return !existing.includes(src) && src.startsWith('http') && src.length > 60
+            && !src.includes('logo') && !src.includes('avatar') && !src.includes('icon');
+        });
+      },
+      existingImgSrcs,
+      { timeout: 120000 }
+    );
 
+    // Small wait to let all images in a batch load
+    await page.waitForTimeout(2000);
+
+    // Collect new image srcs
+    const newImgSrcs = await page.evaluate((existing) =>
+      Array.from(document.querySelectorAll('img[src]'))
+        .map(img => img.src)
+        .filter(src => !existing.includes(src) && src.startsWith('http') && src.length > 60
+          && !src.includes('logo') && !src.includes('avatar') && !src.includes('icon')),
+      existingImgSrcs
+    );
+
+    if (!newImgSrcs.length) throw new Error('未偵測到生成結果，請重試');
+
+    // Download each new image
     const timestamp = Date.now();
-    const filename = `banana_${timestamp}.png`;
-    const outputPath = path.join(DOWNLOAD_DIR, filename);
-
-    const imgSrc = await resultImg.getAttribute('src');
-    if (imgSrc && imgSrc.startsWith('http')) {
+    const savedImages = [];
+    for (let i = 0; i < newImgSrcs.length; i++) {
+      const filename = `banana_${timestamp}_${i}.png`;
+      const outputPath = path.join(DOWNLOAD_DIR, filename);
       const buf = await page.evaluate(async (url) => {
         const r = await fetch(url);
         return Array.from(new Uint8Array(await r.arrayBuffer()));
-      }, imgSrc);
+      }, newImgSrcs[i]);
       fs.writeFileSync(outputPath, Buffer.from(buf));
-    } else {
-      await resultImg.screenshot({ path: outputPath });
+      const base64 = fs.readFileSync(outputPath).toString('base64');
+      savedImages.push({
+        filename,
+        path: `/outputs/banana-images/${filename}`,
+        base64: `data:image/png;base64,${base64}`,
+      });
     }
 
-    const base64 = fs.readFileSync(outputPath).toString('base64');
     await saveSession();
     await page.close();
 
     res.json({
       ok: true,
-      filename,
-      path: `/outputs/banana-images/${filename}`,
-      base64: `data:image/png;base64,${base64}`,
       prompt,
+      images: savedImages,
+      // backward compat: single image fields
+      filename: savedImages[0].filename,
+      path: savedImages[0].path,
+      base64: savedImages[0].base64,
     });
   } catch (err) {
     if (page) await page.close().catch(() => {});

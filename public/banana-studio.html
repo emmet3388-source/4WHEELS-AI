@@ -387,18 +387,56 @@
     margin-left: auto;
   }
 
-  /* ── Ratio Selector ── */
+  /* ── Option Selectors ── */
+  .option-group {
+    margin-top: 14px;
+  }
+  .option-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
   .ratio-pills {
     display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-top: 12px;
+    gap: 5px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
   }
+  .ratio-pills::-webkit-scrollbar { display: none; }
 
   .ratio-pill {
     font-family: 'DM Mono', monospace;
     font-size: 11px;
-    padding: 5px 12px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .ratio-pill.active, .ratio-pill:hover {
+    border-color: rgba(167,139,250,0.4);
+    background: rgba(167,139,250,0.08);
+    color: var(--accent);
+  }
+
+  .option-pills {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .option-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 5px 14px;
     border-radius: 20px;
     border: 1px solid var(--border);
     background: transparent;
@@ -406,8 +444,7 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-
-  .ratio-pill.active, .ratio-pill:hover {
+  .option-pill.active, .option-pill:hover {
     border-color: rgba(167,139,250,0.4);
     background: rgba(167,139,250,0.08);
     color: var(--accent);
@@ -884,14 +921,45 @@
       </div>
 
       <!-- Aspect Ratio -->
-      <div>
-        <label>長寬比</label>
+      <div class="option-group">
+        <div class="option-label">圖片尺寸</div>
         <div class="ratio-pills">
-          <button class="ratio-pill active" data-ratio="1:1"  onclick="setRatio(this, '1:1')">1:1</button>
-          <button class="ratio-pill" data-ratio="4:3"  onclick="setRatio(this, '4:3')">4:3</button>
-          <button class="ratio-pill" data-ratio="16:9" onclick="setRatio(this, '16:9')">16:9</button>
-          <button class="ratio-pill" data-ratio="9:16" onclick="setRatio(this, '9:16')">9:16（Reels）</button>
-          <button class="ratio-pill" data-ratio="3:4"  onclick="setRatio(this, '3:4')">3:4（IG）</button>
+          <button class="ratio-pill active" onclick="setRatio(this,'auto')">自動</button>
+          <button class="ratio-pill" onclick="setRatio(this,'1:1')">1:1</button>
+          <button class="ratio-pill" onclick="setRatio(this,'8:1')">8:1</button>
+          <button class="ratio-pill" onclick="setRatio(this,'4:1')">4:1</button>
+          <button class="ratio-pill" onclick="setRatio(this,'21:9')">21:9</button>
+          <button class="ratio-pill" onclick="setRatio(this,'16:9')">16:9</button>
+          <button class="ratio-pill" onclick="setRatio(this,'3:2')">3:2</button>
+          <button class="ratio-pill" onclick="setRatio(this,'4:3')">4:3</button>
+          <button class="ratio-pill" onclick="setRatio(this,'5:4')">5:4</button>
+          <button class="ratio-pill" onclick="setRatio(this,'4:5')">4:5</button>
+          <button class="ratio-pill" onclick="setRatio(this,'3:4')">3:4</button>
+          <button class="ratio-pill" onclick="setRatio(this,'2:3')">2:3</button>
+          <button class="ratio-pill" onclick="setRatio(this,'9:16')">9:16</button>
+          <button class="ratio-pill" onclick="setRatio(this,'1:4')">1:4</button>
+          <button class="ratio-pill" onclick="setRatio(this,'1:8')">1:8</button>
+        </div>
+      </div>
+
+      <!-- Resolution -->
+      <div class="option-group">
+        <div class="option-label">解析度</div>
+        <div class="option-pills">
+          <button class="option-pill active" onclick="setResolution(this,'1K')">1K</button>
+          <button class="option-pill" onclick="setResolution(this,'2K')">2K</button>
+          <button class="option-pill" onclick="setResolution(this,'4K')">4K</button>
+        </div>
+      </div>
+
+      <!-- Image Count -->
+      <div class="option-group">
+        <div class="option-label">圖片數量</div>
+        <div class="option-pills">
+          <button class="option-pill active" onclick="setCount(this,1)">1</button>
+          <button class="option-pill" onclick="setCount(this,2)">2</button>
+          <button class="option-pill" onclick="setCount(this,3)">3</button>
+          <button class="option-pill" onclick="setCount(this,4)">4</button>
         </div>
       </div>
 
@@ -929,7 +997,9 @@
 </div>
 
 <script>
-  let selectedRatio = '1:1';
+  let selectedRatio = 'auto';
+  let selectedResolution = '1K';
+  let selectedCount = 1;
   let isGenerating = false;
   let oauthPollTimer = null;
 
@@ -1098,7 +1168,7 @@
       const res = await fetch('/api/banana/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, aspectRatio: selectedRatio }),
+        body: JSON.stringify({ prompt, aspectRatio: selectedRatio, resolution: selectedResolution, imageCount: selectedCount }),
       });
       const data = await res.json();
 
@@ -1135,15 +1205,19 @@
   }
 
   function showResult(data) {
-    const ts = new Date().toLocaleTimeString('zh-TW');
+    const images = data.images || [{ base64: data.base64, filename: data.filename }];
+    const cols = images.length > 1 ? `grid-template-columns:repeat(${Math.min(images.length,2)},1fr);gap:10px;` : '';
+    const imgsHtml = images.map((img, i) => `
+      <div style="position:relative;">
+        <img src="${img.base64}" alt="${data.prompt}" onclick="openLightbox('${img.base64}')" style="cursor:zoom-in;width:100%;border-radius:10px;" />
+        <a class="gen-download-btn" href="${img.base64}" download="banana_${Date.now()}_${i}.png" style="position:absolute;bottom:10px;right:10px;">↓ 下載</a>
+      </div>
+    `).join('');
     document.getElementById('resultArea').innerHTML = `
       <div class="gen-preview" style="animation:fadeIn 0.4s ease;">
-        <img src="${data.base64}" alt="${data.prompt}" onclick="openLightbox('${data.base64}')" style="cursor:zoom-in;" />
-        <div class="gen-preview-meta">
+        <div style="display:grid;${cols}">${imgsHtml}</div>
+        <div class="gen-preview-meta" style="margin-top:10px;">
           <div class="gen-prompt-text">${escHtml(data.prompt)}</div>
-          <a class="gen-download-btn" href="${data.base64}" download="banana_${Date.now()}.png">
-            ↓ 下載
-          </a>
         </div>
       </div>
     `;
@@ -1179,6 +1253,18 @@
   function setRatio(el, ratio) {
     selectedRatio = ratio;
     document.querySelectorAll('.ratio-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function setResolution(el, res) {
+    selectedResolution = res;
+    el.closest('.option-pills').querySelectorAll('.option-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function setCount(el, count) {
+    selectedCount = count;
+    el.closest('.option-pills').querySelectorAll('.option-pill').forEach(p => p.classList.remove('active'));
     el.classList.add('active');
   }
 
