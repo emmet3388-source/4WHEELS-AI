@@ -96,6 +96,27 @@
     margin-top: 1px;
   }
 
+  /* ── Header Nav Links ── */
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 20px;
+  }
+  .nav-link {
+    padding: 6px 13px;
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    transition: color 0.2s, background 0.2s;
+  }
+  .nav-link:hover { color: var(--fg); background: rgba(255,255,255,0.05); }
+  .nav-link.active { color: var(--accent); background: rgba(167,139,250,0.1); }
+
   .header-right {
     margin-left: auto;
     display: flex;
@@ -751,10 +772,16 @@
   <!-- ── Header ── -->
   <header>
     <div>
-      <div class="logo">🍌 Banana Studio</div>
+      <a href="/" style="text-decoration:none;"><div class="logo">🍌 Banana Studio</div></a>
     </div>
     <span class="logo-sep">·</span>
     <span class="logo-sub">4WHEELS AI</span>
+    <nav class="nav-links">
+      <a href="/" class="nav-link">⚡ AI Studio</a>
+      <a href="/library" class="nav-link">📚 Library</a>
+      <a href="/pipeline.html" class="nav-link">🚀 Pipeline</a>
+      <a href="/banana-studio.html" class="nav-link active">🍌 Banana Studio</a>
+    </nav>
     <div class="header-right">
       <div class="model-badge">GEMINI FLASH IMAGE</div>
       <div id="headerStatus" class="status-pill disconnected">
