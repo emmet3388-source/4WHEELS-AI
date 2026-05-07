@@ -1,0 +1,7 @@
+{
+  "source": "manual-fitment.json",
+  "updatedAt": "",
+  "status": "manual",
+  "message": "人工匯入資料庫。只能填入已確認的車款適配資料，不確定欄位請留空或寫待確認。",
+  "vehicles": []
+}

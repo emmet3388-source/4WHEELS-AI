@@ -1,0 +1,34 @@
+{
+  "name": "4wheels-ai-agent",
+  "version": "1.0.0",
+  "description": "四個圈輪業 AI 問答代理，使用 OpenAI Responses API。",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js",
+    "ask": "node agent.js",
+    "test": "node --check agent.js && node --check src/fitment/fetchFitment.js && node --check src/fitment/cacheFitment.js && node --check src/fitment/searchFitment.js && node --check src/fitment/exportKnowledge.js && node --check src/mcp/fitment-server.js",
+    "fitment:refresh": "node src/fitment/fetchFitment.js",
+    "mcp": "node src/mcp/fitment-server.js"
+  },
+  "keywords": [
+    "4wheels",
+    "openai",
+    "responses-api",
+    "tires",
+    "wheels",
+    "cli"
+  ],
+  "author": "4WHEELS AI",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.1",
+    "cheerio": "^1.1.2",
+    "dotenv": "^17.4.2",
+    "node-fetch": "^3.3.2",
+    "openai": "^6.35.0",
+    "zod": "^4.1.13"
+  },
+  "optionalDependencies": {
+    "playwright": "^1.56.1"
+  }
+}
