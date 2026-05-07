@@ -393,6 +393,12 @@ router.get('/points', async (req, res) => {
     await page.goto(`${BASE_URL}/image/gemini-3-1-flash-image/`, {
       waitUntil: 'networkidle', timeout: 20000,
     });
+    // Wait for the points balance element to load with a real value (> 0 or stable)
+    await page.waitForFunction(() => {
+      const el = Array.from(document.querySelectorAll('div'))
+        .find(e => e.className?.includes('gradient') && /^\d+$/.test(e.textContent.trim()));
+      return el && parseInt(el.textContent.trim()) > 0;
+    }, { timeout: 8000 }).catch(() => {});
     const points = await page.evaluate(() => {
       const el = Array.from(document.querySelectorAll('div'))
         .find(e => e.className?.includes('gradient') && /^\d+$/.test(e.textContent.trim()));
