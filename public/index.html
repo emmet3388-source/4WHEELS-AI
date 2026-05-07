@@ -1,0 +1,1153 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>4WHEELS AI · Studio</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #07080f;
+      color: #dde1f0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                   "Segoe UI", "Noto Sans TC", sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Background ── */
+    .bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .bg::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+    }
+    .orb { position: absolute; border-radius: 50%; filter: blur(130px); opacity: 0.18; }
+    .orb-1 { width:700px;height:700px;background:radial-gradient(circle,#00c853,transparent 70%);top:-280px;left:-200px; }
+    .orb-2 { width:550px;height:550px;background:radial-gradient(circle,#5038ff,transparent 70%);top:20%;right:-180px; }
+    .orb-3 { width:420px;height:420px;background:radial-gradient(circle,#00b4d8,transparent 70%);bottom:-60px;left:35%;opacity:0.11; }
+
+    /* ── Layout ── */
+    .page { position: relative; z-index: 1; }
+    .container { width: 92%; max-width: 860px; margin: 0 auto; padding-bottom: 120px; }
+
+    /* ── Nav ── */
+    .nav {
+      position: relative; z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      width: 92%;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .nav-link {
+      padding: 7px 15px;
+      border-radius: 8px;
+      color: #3a4060;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-link:hover { color: #dde1f0; background: rgba(255,255,255,0.04); }
+    .nav-link.active { color: #00c853; background: rgba(0,200,83,0.07); }
+
+    /* ── Hero ── */
+    .hero { text-align: center; padding: 80px 0 52px; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 16px 5px 12px;
+      border: 1px solid rgba(0,200,83,0.3);
+      border-radius: 100px;
+      background: rgba(0,200,83,0.06);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #00c853;
+      margin-bottom: 32px;
+    }
+    .hero-badge-dot {
+      width: 6px; height: 6px;
+      background: #00c853;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #00c853;
+      animation: blink 2.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    .hero-title {
+      font-size: clamp(38px, 6.5vw, 76px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.08;
+      background: linear-gradient(140deg, #ffffff 0%, #b8d4ff 40%, #00c853 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+    }
+    .hero-sub {
+      font-size: 15px;
+      color: #525870;
+      line-height: 1.8;
+      max-width: 380px;
+      margin: 0 auto 44px;
+    }
+    .hero-divider {
+      width: 1px; height: 48px;
+      background: linear-gradient(to bottom, rgba(0,200,83,0.5), transparent);
+      margin: 0 auto;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: rgba(255,255,255,0.028);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 24px;
+      padding: 36px;
+      margin-top: 48px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      transition: border-color 0.3s;
+    }
+    .card:hover { border-color: rgba(255,255,255,0.1); }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .card-header-icon {
+      width: 30px; height: 30px;
+      border-radius: 9px;
+      background: rgba(0,200,83,0.12);
+      border: 1px solid rgba(0,200,83,0.22);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .card-header-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #3e4460;
+      flex: 1;
+    }
+    .card-header-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: rgba(0,200,83,0.08);
+      border: 1px solid rgba(0,200,83,0.15);
+      color: #00a844;
+      text-transform: uppercase;
+    }
+
+    /* ── Form ── */
+    .field { margin-bottom: 22px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+    label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      color: #5a6080;
+      text-transform: uppercase;
+      margin-bottom: 9px;
+    }
+
+    select, textarea {
+      width: 100%;
+      padding: 13px 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      color: #dde1f0;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    select {
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2345506a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 44px;
+      cursor: pointer;
+    }
+    select option { background: #0e1020; }
+    select:focus, textarea:focus {
+      border-color: rgba(0,200,83,0.4);
+      background: rgba(0,200,83,0.025);
+      box-shadow: 0 0 0 3px rgba(0,200,83,0.07);
+    }
+    textarea { resize: vertical; min-height: 100px; line-height: 1.65; }
+
+    .hint { font-size: 11px; color: #353c58; margin-top: 7px; line-height: 1.6; }
+    .comedy-hint {
+      color: #7a5020;
+      background: rgba(255,160,60,0.06);
+      border: 1px solid rgba(255,140,40,0.15);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-top: 9px;
+    }
+
+    .image-upload {
+      display: grid;
+      gap: 12px;
+    }
+    .image-picker {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed rgba(255,255,255,0.12);
+      border-radius: 14px;
+    }
+    .image-picker input[type="file"] {
+      display: none;
+    }
+    .image-picker-button,
+    .image-clear-button {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      color: #c8cfe6;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: background 0.16s, border-color 0.16s, color 0.16s;
+    }
+    .image-picker-button:hover,
+    .image-clear-button:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.14);
+      color: #ffffff;
+    }
+    .image-file-name {
+      color: #7f87a6;
+      font-size: 12px;
+      line-height: 1.5;
+      flex: 1;
+      word-break: break-word;
+    }
+    .image-preview-wrap {
+      display: none;
+      padding: 12px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+    }
+    .image-preview {
+      display: block;
+      width: 100%;
+      max-height: 260px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.35);
+    }
+
+    /* ── Image toggle ── */
+    .image-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 11px 16px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .image-toggle:hover { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); }
+    .image-toggle input[type="checkbox"] { width: 15px; height: 15px; accent-color: #00c853; cursor: pointer; }
+    .image-toggle-text { font-size: 12.5px; color: #6a7090; }
+    .image-toggle-text em { color: #363c55; font-style: normal; font-size: 11px; margin-left: 6px; }
+
+    .generated-image-wrap {
+      display: none;
+      margin: 0 18px 18px;
+      padding: 12px;
+      background: rgba(0,200,83,0.025);
+      border: 1px solid rgba(0,200,83,0.12);
+      border-radius: 14px;
+    }
+    .generated-image-title {
+      color: #6f7a95;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .generated-image {
+      width: 100%;
+      max-height: 520px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.38);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    /* ── Button ── */
+    .btn-run {
+      width: 100%;
+      padding: 16px 28px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
+      color: #03140a;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+      box-shadow: 0 0 32px rgba(0,200,83,0.22), 0 4px 20px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-run::after {
+      content: "";
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 60%);
+      border-radius: inherit;
+    }
+    .btn-run:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 0 48px rgba(0,200,83,0.36), 0 8px 28px rgba(0,0,0,0.5); }
+    .btn-run:active:not(:disabled) { transform: translateY(0); }
+    .btn-run:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* Spinner */
+    .spinner {
+      display: none;
+      width: 15px; height: 15px;
+      border: 2px solid rgba(3,20,10,0.3);
+      border-top-color: #03140a;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-run.loading .spinner { display: block; }
+    .btn-run.loading .btn-icon { display: none; }
+
+    /* ── Output card ── */
+    .output-card {
+      margin-top: 24px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: border-color 0.4s, box-shadow 0.4s;
+    }
+    .output-card.active {
+      border-color: rgba(0,200,83,0.2);
+      box-shadow: 0 0 30px rgba(0,200,83,0.06);
+    }
+    .output-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 18px;
+      background: rgba(255,255,255,0.018);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .traffic-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .traffic-dot.r { background: #ff5f56; }
+    .traffic-dot.y { background: #ffbd2e; }
+    .traffic-dot.g { background: #27c93f; }
+    .output-label {
+      margin-left: 8px;
+      font-size: 11px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      color: #2a3050;
+      letter-spacing: 0.08em;
+      flex: 1;
+    }
+    .copy-btn {
+      padding: 4px 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      color: #525870;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      letter-spacing: 0.04em;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.07); color: #dde1f0; border-color: rgba(255,255,255,0.14); }
+    .copy-btn.copied { color: #00c853; border-color: rgba(0,200,83,0.3); background: rgba(0,200,83,0.06); }
+
+    .output-body {
+      white-space: pre-wrap;
+      padding: 24px 26px;
+      line-height: 1.85;
+      font-size: 13.5px;
+      min-height: 120px;
+      color: #9098b8;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Noto Sans TC", sans-serif;
+    }
+    .output-body.has-content { color: #b0b8d0; }
+
+    /* Loading pulse */
+    @keyframes loadingPulse {
+      0%,100% { opacity: 0.5; }
+      50%      { opacity: 1; }
+    }
+    .output-body.loading { animation: loadingPulse 1.6s ease-in-out infinite; }
+
+    /* ── Badges ── */
+    .project-badge {
+      display: none;
+      margin: 0 18px 16px;
+      padding: 12px 16px;
+      background: rgba(0,200,83,0.04);
+      border: 1px solid rgba(0,200,83,0.18);
+      border-radius: 12px;
+      color: #00b844;
+      font-size: 12px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      letter-spacing: 0.02em;
+      white-space: pre-wrap;
+      line-height: 1.75;
+    }
+    .save-badge {
+      display: none;
+      margin: 0 18px 16px;
+      padding: 9px 14px;
+      background: rgba(0,200,83,0.03);
+      border: 1px solid rgba(0,200,83,0.12);
+      border-radius: 9px;
+      color: #3e6050;
+      font-size: 11.5px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      letter-spacing: 0.02em;
+      white-space: pre-wrap;
+    }
+
+    /* ── Grok card ── */
+    .card.grok { margin-top: 44px; }
+    .card.grok .card-header-icon {
+      background: rgba(120,60,255,0.12);
+      border-color: rgba(120,60,255,0.22);
+    }
+    .card.grok .card-header-label { color: #6a40e0; }
+    .card.grok .card-header-badge {
+      background: rgba(120,60,255,0.08);
+      border-color: rgba(120,60,255,0.15);
+      color: #7c50ff;
+    }
+    .card.grok select:focus, .card.grok textarea:focus {
+      border-color: rgba(124,58,255,0.4);
+      background: rgba(124,58,255,0.025);
+      box-shadow: 0 0 0 3px rgba(124,58,255,0.07);
+    }
+    .card.grok .btn-run {
+      background: linear-gradient(135deg, #7c3aff 0%, #9d6aff 100%);
+      box-shadow: 0 0 32px rgba(124,58,255,0.22), 0 4px 20px rgba(0,0,0,0.4);
+      color: #f0eeff;
+    }
+    .card.grok .btn-run::after { background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 60%); }
+    .card.grok .btn-run:hover:not(:disabled) {
+      box-shadow: 0 0 48px rgba(124,58,255,0.36), 0 8px 28px rgba(0,0,0,0.5);
+    }
+    .card.grok .btn-run .spinner { border-color: rgba(240,238,255,0.3); border-top-color: #f0eeff; }
+
+    .output-card.grok-card.active {
+      border-color: rgba(124,58,255,0.2);
+      box-shadow: 0 0 30px rgba(124,58,255,0.06);
+    }
+    .car-info-badge {
+      display: none;
+      margin: 0 18px 8px;
+      padding: 7px 14px;
+      background: rgba(120,60,255,0.06);
+      border: 1px solid rgba(120,60,255,0.16);
+      border-radius: 8px;
+      color: #8866dd;
+      font-size: 11.5px;
+      font-family: "SF Mono","Fira Code",monospace;
+    }
+    .grok-save-badge {
+      display: none;
+      margin: 0 18px 16px;
+      padding: 9px 14px;
+      background: rgba(120,60,255,0.03);
+      border: 1px solid rgba(120,60,255,0.12);
+      border-radius: 9px;
+      color: #4a3880;
+      font-size: 11.5px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      letter-spacing: 0.02em;
+      white-space: pre-wrap;
+    }
+
+    /* ── Script attachments ── */
+    .script-library {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: 0.72fr 1.28fr;
+      gap: 18px;
+    }
+    .script-list,
+    .script-preview {
+      min-height: 220px;
+      background: rgba(0,0,0,0.36);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .script-panel-title {
+      padding: 12px 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: #6b7090;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .script-items {
+      max-height: 360px;
+      overflow: auto;
+      padding: 8px;
+    }
+    .script-item {
+      width: 100%;
+      text-align: left;
+      padding: 11px 12px;
+      margin-bottom: 7px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.055);
+      border-radius: 10px;
+      color: #9aa2c0;
+      font: inherit;
+      cursor: pointer;
+      transition: background 0.16s, border-color 0.16s, color 0.16s;
+    }
+    .script-item:hover,
+    .script-item.active {
+      background: rgba(124,58,255,0.08);
+      border-color: rgba(124,58,255,0.24);
+      color: #d4ccff;
+    }
+    .script-item-name {
+      display: block;
+      font-size: 12px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+    .script-item-meta {
+      display: block;
+      margin-top: 5px;
+      color: #4b506d;
+      font-size: 10.5px;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+    .script-preview-body {
+      white-space: pre-wrap;
+      padding: 18px;
+      color: #9fa7c4;
+      font-size: 13px;
+      line-height: 1.78;
+      min-height: 180px;
+      max-height: 460px;
+      overflow: auto;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 64px 0 0;
+      font-size: 10.5px;
+      color: #1e2438;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 560px) {
+      .field-row { grid-template-columns: 1fr; }
+      .script-library { grid-template-columns: 1fr; }
+      .card { padding: 24px 18px; }
+      .hero { padding: 60px 0 36px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="page">
+
+  <!-- ── Nav ── -->
+  <nav class="nav">
+    <a href="/"        class="nav-link active">⚡ AI Studio</a>
+    <a href="https://4wheels.com.tw/product_tire_list" class="nav-link" target="_blank" rel="noopener noreferrer">🛞 輪胎搜尋</a>
+    <a href="/library" class="nav-link">📚 Library</a>
+    <a href="/banana-studio.html" class="nav-link">🍌 Banana Studio</a>
+  </nav>
+
+  <div class="container">
+
+    <!-- ── Hero ── -->
+    <section class="hero">
+      <div class="hero-badge">
+        <div class="hero-badge-dot"></div>
+        AI Marketing System · Online
+      </div>
+      <h1 class="hero-title">4WHEELS AI<br>Marketing System</h1>
+      <p class="hero-sub">為林口四個圈輪業打造的<br>AI 社群內容工作台</p>
+      <div class="hero-divider"></div>
+    </section>
+
+    <!-- ── Unified Content Panel ── -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-icon">⚙️</div>
+        <span class="card-header-label">Content Engine</span>
+        <span class="card-header-badge">OpenAI Search → Grok Review → OpenAI Posts</span>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>內容類型</label>
+          <select id="contentType">
+            <option value="recommend">🛞 推薦</option>
+            <option value="knowledge">📘 知識科普</option>
+            <option value="troubleshoot">🛠 疑難雜症</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>代理角色</label>
+          <select id="agent">
+            <option value="tire-master">🔧 輪胎老師傅</option>
+            <option value="female-driver">🚗 女車主</option>
+            <option value="car-modifier">🏎 改裝玩家</option>
+            <option value="social-editor">✍️ 社群小編</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>主題</label>
+        <textarea
+          id="title"
+          placeholder="例如：RAV4 鋁圈怎麼選？ / Luxgen N7 輪胎推薦 / 雨天煞車距離變長怎麼辦？"
+        ></textarea>
+        <div class="hint">輪胎 / 鋁圈 / 胎規內容會優先參考 4WHEELS Fitment，再由 Grok 整理推薦資料，最後交給 OpenAI 生成六大平台專屬貼文。</div>
+      </div>
+
+      <div class="field">
+        <label>參考圖片</label>
+        <div class="image-upload">
+          <div class="image-picker">
+            <label class="image-picker-button" for="referenceImage">選擇圖片</label>
+            <input id="referenceImage" type="file" accept="image/*" onchange="handleReferenceImageChange(event)">
+            <div class="image-file-name" id="referenceImageName">可選填。AI 會先辨識圖片，再依畫面內容生成六大平台貼文。</div>
+            <button type="button" class="image-clear-button" onclick="clearReferenceImage()">清除</button>
+          </div>
+          <div class="image-preview-wrap" id="referenceImagePreviewWrap">
+            <img id="referenceImagePreview" class="image-preview" alt="參考圖片預覽">
+          </div>
+        </div>
+      </div>
+
+      <label class="image-toggle">
+        <input id="withImage" type="checkbox">
+        <span class="image-toggle-text">同步生成社群圖片 <em>會額外產生 image.png</em></span>
+      </label>
+
+      <button class="btn-run" id="runButton" onclick="runAI()">
+        <div class="spinner"></div>
+        <span class="btn-icon">⚡</span>
+        <span class="btn-label">生成六平台內容</span>
+      </button>
+    </div>
+
+    <!-- ── Output ── -->
+    <div class="output-card" id="outputCard">
+      <div class="output-titlebar">
+        <div class="traffic-dot r"></div>
+        <div class="traffic-dot y"></div>
+        <div class="traffic-dot g"></div>
+        <span class="output-label">OUTPUT · AI RESULT</span>
+        <button class="copy-btn" id="copyBtn" onclick="copyOutput('output','copyBtn')">複製</button>
+      </div>
+      <div class="output-body" id="output">等待 AI 指令...</div>
+      <div class="generated-image-wrap" id="generatedImageWrap">
+        <div class="generated-image-title">Generated Image</div>
+        <img id="generatedImage" class="generated-image" alt="AI 生成圖片">
+      </div>
+      <div class="project-badge" id="projectBadge"></div>
+      <div class="save-badge" id="saveBadge"></div>
+    </div>
+
+    <!-- ── Video Script Studio ── -->
+    <div class="card grok">
+      <div class="card-header">
+        <div class="card-header-icon">🎥</div>
+        <span class="card-header-label">Video Script Studio</span>
+        <span class="card-header-badge">短影音導演 · 笑點設計師</span>
+      </div>
+
+      <div class="field">
+        <label>拍攝主題</label>
+        <textarea
+          id="videoTopic"
+          rows="3"
+          placeholder="例如：RAV4 換靜音胎前後差異 / 雨天輪胎抓地測試 / 鋁圈 ET 值怎麼看"
+        ></textarea>
+        <div class="hint">只產生拍攝腳本：前 3 秒、鏡頭、字幕、B-roll、口播、剪輯節奏，不混入六平台貼文代理。</div>
+      </div>
+
+      <div class="field">
+        <label>喜劇風格</label>
+        <select id="comedyStyle">
+          <option value="">🎬 標準腳本（不加笑點）</option>
+          <option value="movie">🎥 電影橋段（動作片 / 愛情片 / 恐怖片語言套入輪胎情境）</option>
+          <option value="standup">🎤 脫口秀（Setup → Punchline → Tag → Callback 結構）</option>
+          <option value="twist">🔄 反轉梗（預期落差、打臉、沒想到的結局）</option>
+          <option value="exaggerate">💥 誇張對比（日常情境放大到超現實，換胎前後天差地別）</option>
+          <option value="selfroast">😅 師傅自嘲（自我嘲諷建立真實人味與信任感）</option>
+          <option value="visual">🎭 純視覺 / 無聲敘事（靠畫面說話，不靠對白，靜音也能笑）</option>
+        </select>
+        <div class="hint comedy-hint" id="comedyHint" style="display:none"></div>
+      </div>
+
+      <button class="btn-run" id="videoButton" onclick="runVideoScript()">
+        <div class="spinner"></div>
+        <span class="btn-icon">🎬</span>
+        <span class="btn-label">生成拍攝腳本</span>
+      </button>
+    </div>
+
+    <div class="output-card grok-card" id="videoOutputCard" style="display:none; margin-top:24px;">
+      <div class="output-titlebar">
+        <div class="traffic-dot r"></div>
+        <div class="traffic-dot y"></div>
+        <div class="traffic-dot g"></div>
+        <span class="output-label">VIDEO · SCRIPT</span>
+        <button class="copy-btn" id="videoCopyBtn" onclick="copyOutput('videoOutput','videoCopyBtn')">複製</button>
+      </div>
+      <div class="output-body" id="videoOutput">等待拍攝腳本...</div>
+      <div class="save-badge" id="videoSaveBadge"></div>
+    </div>
+
+    <!-- ── Video Script Attachments ── -->
+    <div class="script-library">
+      <div class="script-list">
+        <div class="script-panel-title">腳本附件 · 最新存檔</div>
+        <div class="script-items" id="scriptItems">讀取中...</div>
+      </div>
+      <div class="script-preview">
+        <div class="script-panel-title" id="scriptPreviewTitle">點開檔案查看內容</div>
+        <div class="script-preview-body" id="scriptPreview">短影音導演生成的腳本會自動存成 txt，並顯示在這裡。</div>
+      </div>
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="footer">4WHEELS AI · Linkou · OpenAI GPT-4.1 + xAI Grok-4</div>
+
+  </div>
+</div>
+
+<script>
+// ── 複製輸出 ────────────────────────────────────────────────────────
+function copyOutput(outputId, btnId) {
+  const text = document.getElementById(outputId).textContent;
+  if (!text || text === "等待 AI 指令...") return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(btnId);
+    btn.textContent = "已複製 ✓";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = "複製"; btn.classList.remove("copied"); }, 2000);
+  });
+}
+
+let videoScriptFiles = [];
+let referenceImageDataUrl = "";
+let referenceImageName = "";
+
+const COMEDY_HINTS = {
+  movie:      "🎥 AI 會把輪胎情境套入電影語言，每個分鏡標明模仿哪種電影橋段與笑點設計。",
+  standup:    "🎤 用脫口秀三段式結構：Premise → Observation → Punchline → Callback，每個分鏡標明笑點位置。",
+  twist:      "🔄 建立強烈預期再打臉，讓觀眾覺得「哈哈哈完全沒想到」。每個分鏡標明是在鋪設還是執行反轉。",
+  exaggerate: "💥 把換胎前後的差異誇張到超現實等級，對比要快要強，讓觀眾笑完記住師傅。",
+  selfroast:  "😅 師傅主動說「我當年也不懂」，用自嘲建立真實人味，觀眾笑完反而更信任他。",
+  visual:     "🎭 不靠口播、不靠字幕，靠構圖、演員反應、道具邏輯、剪輯節奏說故事。參考 Buster Keaton、Mr. Bean、Edgar Wright、Pixar 的純視覺喜劇語言。靜音播放也能讓人笑。",
+};
+
+document.getElementById("comedyStyle")?.addEventListener("change", function () {
+  const hint = document.getElementById("comedyHint");
+  if (this.value && COMEDY_HINTS[this.value]) {
+    hint.textContent = COMEDY_HINTS[this.value];
+    hint.style.display = "block";
+  } else {
+    hint.style.display = "none";
+  }
+});
+
+function escapeHtml(text) {
+  return String(text ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatScriptMeta(file) {
+  const sizeKb = Math.max(1, Math.round((file.size || 0) / 1024));
+  return `${file.date || ""} · ${sizeKb} KB`;
+}
+
+function renderVideoScriptFiles(activePath = "") {
+  const list = document.getElementById("scriptItems");
+
+  if (!videoScriptFiles.length) {
+    list.innerHTML = `<div class="script-preview-body">目前還沒有短影音腳本附件。</div>`;
+    return;
+  }
+
+  list.innerHTML = videoScriptFiles.map((file, index) => {
+    const active = file.path === activePath ? " active" : "";
+    return `
+      <button class="script-item${active}" onclick="openVideoScriptFile(${index})">
+        <span class="script-item-name">${escapeHtml(file.filename)}</span>
+        <span class="script-item-meta">${escapeHtml(formatScriptMeta(file))}</span>
+      </button>
+    `;
+  }).join("");
+}
+
+async function loadVideoScripts(activePath = "") {
+  const list = document.getElementById("scriptItems");
+  try {
+    const res = await fetch("/api/video-scripts");
+    const data = await res.json();
+    videoScriptFiles = data.files || [];
+    renderVideoScriptFiles(activePath);
+
+    if (activePath) {
+      const index = videoScriptFiles.findIndex((file) => file.path === activePath);
+      if (index >= 0) openVideoScriptFile(index);
+    }
+  } catch (err) {
+    list.textContent = "讀取腳本附件失敗：" + err.message;
+  }
+}
+
+function clearReferenceImage() {
+  referenceImageDataUrl = "";
+  referenceImageName = "";
+  document.getElementById("referenceImage").value = "";
+  document.getElementById("referenceImageName").textContent = "可選填。AI 會先辨識圖片，再依畫面內容生成六大平台貼文。";
+  document.getElementById("referenceImagePreview").removeAttribute("src");
+  document.getElementById("referenceImagePreviewWrap").style.display = "none";
+}
+
+function loadImageElement(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+async function compressImageToDataUrl(file) {
+  const sourceDataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const image = await loadImageElement(sourceDataUrl);
+  const maxSize = 1280;
+  const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(image, 0, 0, width, height);
+
+  return canvas.toDataURL("image/jpeg", 0.78);
+}
+
+async function handleReferenceImageChange(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    clearReferenceImage();
+    return;
+  }
+
+  const nameEl = document.getElementById("referenceImageName");
+  const previewEl = document.getElementById("referenceImagePreview");
+  const previewWrap = document.getElementById("referenceImagePreviewWrap");
+
+  nameEl.textContent = "處理圖片中...";
+
+  try {
+    referenceImageDataUrl = await compressImageToDataUrl(file);
+    referenceImageName = file.name;
+    nameEl.textContent = file.name;
+    previewEl.src = referenceImageDataUrl;
+    previewWrap.style.display = "block";
+  } catch (err) {
+    clearReferenceImage();
+    nameEl.textContent = "圖片處理失敗：" + err.message;
+  }
+}
+
+async function openVideoScriptFile(index) {
+  const file = videoScriptFiles[index];
+  if (!file) return;
+
+  const title = document.getElementById("scriptPreviewTitle");
+  const body = document.getElementById("scriptPreview");
+  title.textContent = file.filename;
+  body.textContent = "讀取中...";
+  renderVideoScriptFiles(file.path);
+
+  try {
+    const res = await fetch("/api/library/file?p=" + encodeURIComponent(file.path));
+    const data = await res.json();
+    body.textContent = data.content || data.error || "沒有內容。";
+  } catch (err) {
+    body.textContent = "讀取失敗：" + err.message;
+  }
+}
+
+// ── AI Studio ──────────────────────────────────────────────────────
+async function runAI() {
+  const output       = document.getElementById("output");
+  const outputCard   = document.getElementById("outputCard");
+  const saveBadge    = document.getElementById("saveBadge");
+  const projectBadge = document.getElementById("projectBadge");
+  const imageWrap    = document.getElementById("generatedImageWrap");
+  const imageEl      = document.getElementById("generatedImage");
+  const button       = document.getElementById("runButton");
+
+  const title       = document.getElementById("title").value.trim();
+  const contentType = document.getElementById("contentType").value;
+  const agent       = document.getElementById("agent").value;
+  const withImage   = document.getElementById("withImage").checked;
+  const hasReferenceImage = Boolean(referenceImageDataUrl);
+
+  if (!title && !hasReferenceImage) {
+    output.textContent = "⚠ 請先輸入主題，或提供一張圖片。";
+    return;
+  }
+
+  output.textContent          = hasReferenceImage
+    ? `Step 0 OpenAI 圖片辨識中...\nStep 1 OpenAI 搜尋資料中（輪胎/鋁圈優先查 4WHEELS Fitment）...\nStep 2 Grok 審核並整理推薦內容...\nStep 3 OpenAI 生成六大平台貼文...${withImage ? "\nStep 4 生成社群圖片 image.png..." : ""}\n\n請稍候，約需 60-180 秒。`
+    : `Step 1 OpenAI 搜尋資料中（輪胎/鋁圈優先查 4WHEELS Fitment）...\nStep 2 Grok 審核並整理推薦內容...\nStep 3 OpenAI 生成六大平台貼文...${withImage ? "\nStep 4 生成社群圖片 image.png..." : ""}\n\n請稍候，約需 60-180 秒。`;
+  output.className            = "output-body loading";
+  saveBadge.style.display    = "none";
+  projectBadge.style.display = "none";
+  imageWrap.style.display    = "none";
+  imageEl.removeAttribute("src");
+  outputCard.classList.add("active");
+  button.disabled            = true;
+  button.classList.add("loading");
+  button.querySelector(".btn-label").textContent = "執行中...";
+
+  try {
+    const res  = await fetch("/api/social-pipeline", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({
+        topic: title,
+        contentType,
+        agent,
+        withImage,
+        referenceImageDataUrl,
+        referenceImageName,
+      }),
+    });
+    const raw = await res.text();
+    let data = null;
+
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      throw new Error(raw || "伺服器沒有回傳可解析的 JSON。");
+    }
+
+    output.className = "output-body has-content";
+
+    if (!res.ok || data.error) {
+      output.textContent = "❌ " + data.error;
+      outputCard.classList.remove("active");
+      return;
+    }
+
+    if (data.projectDir) {
+      const files = data.projectFiles || ["full-output.txt"];
+      projectBadge.textContent = [
+        "✅ 專案已建立：",
+        `${data.projectDir}/`,
+        data.generatedAt ? `建立時間：${data.generatedAt}` : "",
+        "",
+        `包含：${files.join("  ")}`,
+      ].filter((line) => line !== "").join("\n");
+      projectBadge.style.display = "block";
+    }
+
+    if (data.savedPath) {
+      saveBadge.textContent   = `完整備份：${data.savedPath}`;
+      saveBadge.style.display = "block";
+    }
+
+    output.textContent = data.result || "沒有取得結果。";
+
+    if (data.imageUrl) {
+      imageEl.src = data.imageUrl;
+      imageWrap.style.display = "block";
+    } else if (data.imageError) {
+      saveBadge.textContent = `${saveBadge.textContent ? saveBadge.textContent + "\n" : ""}圖片生成失敗：${data.imageError}`;
+      saveBadge.style.display = "block";
+    }
+
+  } catch (err) {
+    output.className   = "output-body";
+    output.textContent = "❌ 執行失敗：" + err.message;
+    outputCard.classList.remove("active");
+  } finally {
+    button.disabled  = false;
+    button.classList.remove("loading");
+    button.querySelector(".btn-label").textContent = "生成六平台內容";
+  }
+}
+
+// ── 短影音導演：拍攝腳本專用 ───────────────────────────────────────
+async function runVideoScript() {
+  const topic       = document.getElementById("videoTopic").value.trim();
+  const comedyStyle = document.getElementById("comedyStyle").value;
+  const outputCard  = document.getElementById("videoOutputCard");
+  const output      = document.getElementById("videoOutput");
+  const saveBadge   = document.getElementById("videoSaveBadge");
+  const button      = document.getElementById("videoButton");
+
+  if (!topic) {
+    outputCard.style.display = "block";
+    output.textContent = "⚠ 請先輸入拍攝主題。";
+    return;
+  }
+
+  const styleLabel = {
+    movie:      "電影橋段",
+    standup:    "脫口秀",
+    twist:      "反轉梗",
+    exaggerate: "誇張對比",
+    selfroast:  "師傅自嘲",
+    visual:     "純視覺敘事",
+  }[comedyStyle] || "標準";
+
+  outputCard.style.display = "block";
+  outputCard.classList.add("active");
+  output.className = "output-body loading";
+  output.textContent = `⏳ 第一步：查詢 4WHEELS Fitment × Grok 車款規格與產品推薦（約 15–30 秒）...`;
+  saveBadge.style.display = "none";
+  button.disabled = true;
+  button.classList.add("loading");
+  button.querySelector(".btn-label").textContent = "研究中...";
+
+  // 模擬研究進度提示
+  const loadingSteps = [
+    "⏳ 第一步：查詢 4WHEELS Fitment × Grok 車款規格與產品推薦（約 15–30 秒）...",
+    "🔍 第二步：Grok 整理車籍資料與具體輪胎型號...",
+    "✍️ 第三步：短影音導演（" + styleLabel + "風格）正在設計拍攝腳本...",
+  ];
+  let stepIndex = 0;
+  const stepTimer = setInterval(() => {
+    stepIndex = Math.min(stepIndex + 1, loadingSteps.length - 1);
+    if (output.className.includes("loading")) {
+      output.textContent = loadingSteps[stepIndex];
+    }
+  }, 10000);
+
+  try {
+    const res = await fetch("/api/video-script", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic, comedyStyle }),
+    });
+    const raw = await res.text();
+    let data = null;
+
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      throw new Error(raw || "伺服器沒有回傳可解析的 JSON。");
+    }
+
+    output.className = "output-body has-content";
+
+    if (!res.ok || data.error) {
+      output.textContent = "❌ " + data.error;
+      return;
+    }
+
+    output.textContent = data.result || "沒有取得結果。";
+
+    if (data.savedPath) {
+      saveBadge.textContent = `已存檔：${data.savedPath}`;
+      saveBadge.style.display = "block";
+    }
+
+    await loadVideoScripts(data.file?.path || data.savedPath?.replace(/^\.\//, ""));
+  } catch (err) {
+    output.className = "output-body";
+    output.textContent = "❌ 執行失敗：" + err.message;
+  } finally {
+    clearInterval(stepTimer);
+    button.disabled = false;
+    button.classList.remove("loading");
+    button.querySelector(".btn-label").textContent = "生成拍攝腳本";
+  }
+}
+
+loadVideoScripts();
+</script>
+
+</body>
+</html>

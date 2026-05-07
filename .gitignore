@@ -1,0 +1,19 @@
+node_modules/
+.env
+.env.local
+.DS_Store
+**/.DS_Store
+._*
+dist/
+build/
+.cache/
+*.log
+
+# Playwright session (contains auth cookies)
+mcp/banana-pro-ai/session.json
+
+# Generated outputs (large files)
+outputs/
+
+# Claude session
+.claude/

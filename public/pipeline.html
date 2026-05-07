@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Social Pipeline · 4WHEELS AI</title>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #07080f;
+      color: #dde1f0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                   "Segoe UI", "Noto Sans TC", sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background */
+    .bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .bg::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+    }
+    .orb { position: absolute; border-radius: 50%; filter: blur(130px); opacity: 0.18; }
+    .orb-1 { width: 700px; height: 700px; background: radial-gradient(circle, #ff6200, transparent 70%); top: -280px; left: -200px; opacity: 0.13; }
+    .orb-2 { width: 550px; height: 550px; background: radial-gradient(circle, #5038ff, transparent 70%); top: 20%; right: -180px; }
+    .orb-3 { width: 420px; height: 420px; background: radial-gradient(circle, #00b4d8, transparent 70%); bottom: -60px; left: 35%; opacity: 0.11; }
+
+    /* Layout */
+    .page { position: relative; z-index: 1; }
+    .container { width: 92%; max-width: 900px; margin: 0 auto; padding-bottom: 100px; }
+
+    /* Nav */
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .nav-link {
+      padding: 7px 16px;
+      border-radius: 8px;
+      color: #3e4460;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-link:hover { color: #dde1f0; background: rgba(255,255,255,0.04); }
+    .nav-link.active { color: #ff8533; background: rgba(255,133,51,0.08); }
+
+    /* Hero */
+    .hero { text-align: center; padding: 72px 0 44px; }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 16px 5px 12px;
+      border: 1px solid rgba(255,133,51,0.3);
+      border-radius: 100px;
+      background: rgba(255,133,51,0.06);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #ff8533;
+      margin-bottom: 32px;
+    }
+    .hero-badge-dot {
+      width: 6px; height: 6px;
+      background: #ff8533;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #ff8533;
+      animation: blink 2.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+    .hero-title {
+      font-size: clamp(32px, 5.5vw, 64px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.08;
+      background: linear-gradient(140deg, #ffffff 0%, #ffd0a8 40%, #ff7a1a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 18px;
+    }
+    .hero-sub {
+      font-size: 14px;
+      color: #525870;
+      line-height: 1.8;
+      max-width: 460px;
+      margin: 0 auto;
+    }
+
+    /* Card */
+    .card {
+      background: rgba(255,255,255,0.028);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 24px;
+      padding: 36px;
+      margin-top: 48px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .card-header-icon {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: rgba(255,133,51,0.12);
+      border: 1px solid rgba(255,133,51,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .card-header-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #ff8533;
+    }
+
+    /* Form */
+    .field { margin-bottom: 22px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: #6a7090;
+      text-transform: uppercase;
+      margin-bottom: 9px;
+    }
+    select, textarea {
+      width: 100%;
+      padding: 13px 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      color: #dde1f0;
+      font-size: 14.5px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2345506a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 44px;
+      cursor: pointer;
+    }
+    select option { background: #0e1020; }
+    select:focus, textarea:focus {
+      border-color: rgba(255,133,51,0.35);
+      background: rgba(255,133,51,0.03);
+      box-shadow: 0 0 0 3px rgba(255,133,51,0.07);
+    }
+    textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+    /* Button */
+    .btn-run {
+      width: 100%;
+      padding: 16px 28px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #ff6a00 0%, #ff9a44 100%);
+      color: #1a0800;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 0 32px rgba(255,106,0,0.22), 0 4px 20px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-run::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 60%);
+      border-radius: inherit;
+    }
+    .btn-run:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 48px rgba(255,106,0,0.36), 0 8px 28px rgba(0,0,0,0.5);
+    }
+    .btn-run:active { transform: translateY(0); }
+    .btn-run:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn-run .btn-spinner {
+      display: none;
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(26,8,0,0.3);
+      border-top-color: #1a0800;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    .btn-run.loading .btn-spinner { display: inline-block; }
+
+    /* Step progress bar */
+    .steps {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      margin-top: 44px;
+      margin-bottom: 4px;
+      gap: 0;
+    }
+    .step {
+      flex: none;
+      text-align: center;
+      width: 120px;
+    }
+    .step-circle {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin: 0 auto 10px;
+      transition: all 0.4s ease;
+      position: relative;
+    }
+    .step-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #2e3450;
+      text-transform: uppercase;
+      transition: color 0.4s;
+    }
+    .step-sub {
+      font-size: 10px;
+      color: #1e2440;
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+    .step-connector {
+      flex: 1;
+      max-width: 80px;
+      height: 2px;
+      background: rgba(255,255,255,0.06);
+      position: relative;
+      margin-bottom: 30px;
+    }
+    .step-connector-fill {
+      position: absolute;
+      top: 0; left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff6a00, #ff9a44);
+      transition: width 0.8s ease;
+    }
+
+    .step.active .step-circle {
+      border-color: rgba(255,133,51,0.55);
+      background: rgba(255,133,51,0.1);
+      box-shadow: 0 0 24px rgba(255,133,51,0.25);
+    }
+    .step.active .step-label { color: #ff8533; }
+    .step.active .step-sub   { color: #6a4020; }
+
+    .step.done .step-circle {
+      border-color: rgba(0,200,83,0.5);
+      background: rgba(0,200,83,0.1);
+      box-shadow: 0 0 18px rgba(0,200,83,0.18);
+    }
+    .step.done .step-label { color: #00c853; }
+    .step.done .step-sub   { color: #1a4030; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .step.active .step-circle::before {
+      content: "";
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: #ff8533;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Output cards */
+    .output-card {
+      display: none;
+      margin-top: 28px;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .output-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 13px 20px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .traffic-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .traffic-dot.r { background: #ff5f56; }
+    .traffic-dot.y { background: #ffbd2e; }
+    .traffic-dot.g { background: #27c93f; }
+    .output-filename {
+      margin-left: 10px;
+      font-size: 11.5px;
+      font-family: "SF Mono", "Fira Code", "Menlo", monospace;
+      color: #2e3450;
+      letter-spacing: 0.06em;
+    }
+    .output-body {
+      white-space: pre-wrap;
+      padding: 24px 28px;
+      line-height: 1.85;
+      font-size: 13.5px;
+      color: #b0b8d0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                   "Segoe UI", "Noto Sans TC", sans-serif;
+    }
+    .grok-body {
+      max-height: 380px;
+      overflow-y: auto;
+      color: #7a82a0;
+      font-size: 12.5px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,133,51,0.2) transparent;
+    }
+    .save-badge {
+      display: none;
+      margin: 0 20px 20px;
+      padding: 10px 16px;
+      background: rgba(255,133,51,0.05);
+      border: 1px solid rgba(255,133,51,0.2);
+      border-radius: 10px;
+      color: #ff8533;
+      font-size: 12px;
+      font-family: "SF Mono", "Fira Code", "Menlo", monospace;
+      letter-spacing: 0.02em;
+      white-space: pre-wrap;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 64px 0 0;
+      font-size: 11px;
+      color: #242840;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 560px) {
+      .field-row { grid-template-columns: 1fr; }
+      .card { padding: 24px 20px; }
+      .step { width: 80px; }
+      .step-sub { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="page">
+  <div class="container">
+
+    <!-- Nav -->
+    <nav class="nav">
+      <a href="/"        class="nav-link">⚡ AI Studio</a>
+      <a href="/pipeline" class="nav-link active">🔗 Social Pipeline</a>
+      <a href="/library" class="nav-link">📚 Library</a>
+      <a href="/banana-studio.html" class="nav-link">🍌 Banana Studio</a>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-badge">
+        <div class="hero-badge-dot"></div>
+        3-Step AI Pipeline · Grok + OpenAI
+      </div>
+      <h1 class="hero-title">Social<br>Pipeline</h1>
+      <p class="hero-sub">
+        Step 1 抓取 4WHEELS 真實資料<br>
+        Step 2 Grok 萃取核心內容<br>
+        Step 3 AI 生成六大平台貼文
+      </p>
+    </section>
+
+    <!-- Control Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-icon">🔗</div>
+        <span class="card-header-label">Pipeline 設定</span>
+      </div>
+
+      <div class="field">
+        <label>主題</label>
+        <textarea
+          id="topic"
+          rows="2"
+          placeholder="例如：Luxgen N7 輪胎推薦 / 方向盤抖動怎麼回事 / 輪胎磨耗知識科普"
+        ></textarea>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>內容類型</label>
+          <select id="contentType">
+            <option value="recommend">推薦（具體推薦產品）</option>
+            <option value="troubleshoot">疑難雜症（診斷解決）</option>
+            <option value="knowledge">知識科普（正確資訊）</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>代理角色</label>
+          <select id="agent">
+            <option value="social-editor">社群小編</option>
+            <option value="tire-master">輪胎老師傅</option>
+            <option value="female-driver">女車主</option>
+            <option value="car-modifier">改裝玩家</option>
+            <option value="short-video-director">短影音導演</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-run" id="runButton" onclick="runPipeline()">
+        <span class="btn-spinner"></span>
+        <span class="btn-label">🔗&nbsp;&nbsp;啟動 Social Pipeline</span>
+      </button>
+    </div>
+
+    <!-- Step Progress -->
+    <div class="steps" id="steps">
+      <div class="step" id="step1">
+        <div class="step-circle">🌐</div>
+        <div class="step-label">Step 1</div>
+        <div class="step-sub">抓取 Fitment</div>
+      </div>
+      <div class="step-connector">
+        <div class="step-connector-fill" id="conn1"></div>
+      </div>
+      <div class="step" id="step2">
+        <div class="step-circle">🤖</div>
+        <div class="step-label">Step 2</div>
+        <div class="step-sub">Grok 萃取</div>
+      </div>
+      <div class="step-connector">
+        <div class="step-connector-fill" id="conn2"></div>
+      </div>
+      <div class="step" id="step3">
+        <div class="step-circle">✍️</div>
+        <div class="step-label">Step 3</div>
+        <div class="step-sub">生成貼文</div>
+      </div>
+    </div>
+
+    <!-- Grok Data Preview -->
+    <div class="output-card" id="grokCard">
+      <div class="output-titlebar">
+        <div class="traffic-dot r"></div>
+        <div class="traffic-dot y"></div>
+        <div class="traffic-dot g"></div>
+        <span class="output-filename">GROK · 核心資料萃取結果</span>
+      </div>
+      <div class="output-body grok-body" id="grokOutput">Grok 分析中...</div>
+    </div>
+
+    <!-- Social Posts Output -->
+    <div class="output-card" id="resultCard">
+      <div class="output-titlebar">
+        <div class="traffic-dot r"></div>
+        <div class="traffic-dot y"></div>
+        <div class="traffic-dot g"></div>
+        <span class="output-filename">OUTPUT · 六大平台社群貼文</span>
+      </div>
+      <div class="output-body" id="resultOutput">等待生成...</div>
+      <div class="save-badge" id="saveBadge"></div>
+    </div>
+
+    <div class="footer">4WHEELS AI · Social Pipeline · 4wheels.com.tw + Grok + OpenAI</div>
+
+  </div>
+</div>
+
+<script>
+let stepTimers = [];
+
+function clearTimers() {
+  stepTimers.forEach(clearTimeout);
+  stepTimers = [];
+}
+
+function setStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById("step" + i);
+    el.classList.remove("active", "done");
+    if (i < n)      el.classList.add("done");
+    else if (i === n) el.classList.add("active");
+  }
+  if (n >= 2) document.getElementById("conn1").style.width = "100%";
+  if (n >= 3) document.getElementById("conn2").style.width = "100%";
+}
+
+function markAllDone() {
+  clearTimers();
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById("step" + i);
+    el.classList.remove("active");
+    el.classList.add("done");
+  }
+  document.getElementById("conn1").style.width = "100%";
+  document.getElementById("conn2").style.width = "100%";
+}
+
+async function runPipeline() {
+  const topic       = document.getElementById("topic").value.trim();
+  const contentType = document.getElementById("contentType").value;
+  const agent       = document.getElementById("agent").value;
+  const button      = document.getElementById("runButton");
+
+  if (!topic) {
+    alert("請輸入主題");
+    return;
+  }
+
+  // Reset UI
+  clearTimers();
+  button.disabled = true;
+  button.classList.add("loading");
+  button.querySelector(".btn-label").textContent = "執行中...";
+
+  const steps = document.getElementById("steps");
+  steps.style.display = "flex";
+
+  document.getElementById("grokCard").style.display   = "none";
+  document.getElementById("resultCard").style.display = "none";
+  document.getElementById("saveBadge").style.display  = "none";
+  document.getElementById("conn1").style.width        = "0%";
+  document.getElementById("conn2").style.width        = "0%";
+
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById("step" + i).classList.remove("active", "done");
+  }
+
+  // Step animation — approximate timing
+  setStep(1);
+  stepTimers.push(setTimeout(() => setStep(2), 12000));
+  stepTimers.push(setTimeout(() => {
+    setStep(3);
+    document.getElementById("grokCard").style.display = "block";
+    document.getElementById("grokOutput").textContent = "Grok 分析完成，AI 社群小編生成中...";
+  }, 55000));
+
+  try {
+    const res  = await fetch("/api/social-pipeline", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ topic, contentType, agent }),
+    });
+    const data = await res.json();
+
+    clearTimers();
+
+    if (data.error) {
+      markAllDone();
+      document.getElementById("resultCard").style.display = "block";
+      document.getElementById("resultOutput").textContent = "❌ " + data.error;
+      return;
+    }
+
+    // Grok data
+    document.getElementById("grokCard").style.display = "block";
+    document.getElementById("grokOutput").textContent = data.grokData || "(無資料)";
+
+    // Social posts
+    document.getElementById("resultCard").style.display = "block";
+    document.getElementById("resultOutput").textContent = data.result || "(無結果)";
+
+    // Save badge
+    if (data.savedPath) {
+      const badge = document.getElementById("saveBadge");
+      badge.textContent   = "已自動存檔：\n" + data.savedPath;
+      badge.style.display = "block";
+    }
+
+    markAllDone();
+
+  } catch (err) {
+    clearTimers();
+    markAllDone();
+    document.getElementById("resultCard").style.display = "block";
+    document.getElementById("resultOutput").textContent = "執行失敗：" + err.message;
+  } finally {
+    button.disabled = false;
+    button.classList.remove("loading");
+    button.querySelector(".btn-label").textContent = "🔗  啟動 Social Pipeline";
+  }
+}
+</script>
+
+</body>
+</html>

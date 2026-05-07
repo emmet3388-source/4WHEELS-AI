@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Banana Studio · Gemini Flash Image</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #080810;
+    --surface: #0f0f1a;
+    --card:    #141424;
+    --border:  rgba(255,255,255,0.06);
+    --accent:  #a78bfa;
+    --accent2: #f472b6;
+    --text:    #e8e8f0;
+    --muted:   rgba(232,232,240,0.4);
+    --success: #34d399;
+    --danger:  #f87171;
+    --radius:  14px;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── Ambient Background ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 15% 10%, rgba(167,139,250,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 85% 90%, rgba(244,114,182,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Layout ── */
+  .shell {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: 56px 1fr;
+    grid-template-columns: 300px 1fr;
+    grid-template-areas:
+      "header header"
+      "sidebar main";
+  }
+
+  /* ── Header ── */
+  header {
+    grid-area: header;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 28px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,8,16,0.7);
+    backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo-sep { color: var(--border); margin: 0 4px; font-weight: 300; }
+
+  .logo-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    -webkit-text-fill-color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .model-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    background: rgba(167,139,250,0.1);
+    border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 20px;
+    padding: 4px 12px;
+  }
+
+  /* ── Sidebar ── */
+  aside {
+    grid-area: sidebar;
+    border-right: 1px solid var(--border);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+  }
+
+  .section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+
+  /* ── Status Pill ── */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+
+  .status-pill.connected {
+    color: var(--success);
+    background: rgba(52,211,153,0.08);
+    border-color: rgba(52,211,153,0.2);
+  }
+
+  .status-pill.disconnected {
+    color: var(--muted);
+    background: rgba(255,255,255,0.03);
+    border-color: var(--border);
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .status-dot.pulse {
+    animation: pulse 2s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── Form Elements ── */
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  input[type="email"],
+  input[type="password"],
+  input[type="text"],
+  textarea,
+  select {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: rgba(167,139,250,0.4);
+    background: rgba(167,139,250,0.04);
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: rgba(232,232,240,0.2);
+  }
+
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 18px;
+    border-radius: 9px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    width: 100%;
+  }
+
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 100%;
+  }
+
+  .btn-secondary:hover { background: rgba(255,255,255,0.08); }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  /* ── Message ── */
+  .msg {
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 7px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  .msg.ok  { background: rgba(52,211,153,0.08); color: var(--success); border: 1px solid rgba(52,211,153,0.15); }
+  .msg.err { background: rgba(248,113,113,0.08); color: var(--danger);  border: 1px solid rgba(248,113,113,0.15); }
+  .msg.show { display: block; }
+
+  /* ── Main Area ── */
+  main {
+    grid-area: main;
+    padding: 28px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ── Prompt Box ── */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .prompt-card textarea {
+    resize: none;
+    min-height: 100px;
+    font-size: 14px;
+    line-height: 1.7;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    border-color: rgba(255,255,255,0.08);
+  }
+
+  .prompt-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    align-items: center;
+  }
+
+  .btn-generate {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 24px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    color: #fff;
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-generate::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .btn-generate:hover::before { opacity: 1; }
+  .btn-generate:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(167,139,250,0.3); }
+  .btn-generate:active { transform: translateY(0); }
+  .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .spinner.show { display: block; }
+
+  .char-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* ── Ratio Selector ── */
+  .ratio-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .ratio-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .ratio-pill.active, .ratio-pill:hover {
+    border-color: rgba(167,139,250,0.4);
+    background: rgba(167,139,250,0.08);
+    color: var(--accent);
+  }
+
+  /* ── Gallery ── */
+  .gallery-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .gallery-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+  }
+
+  .gallery-empty {
+    text-align: center;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 60px 0;
+  }
+
+  /* ── Image Card ── */
+  .img-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    group: true;
+  }
+
+  .img-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(167,139,250,0.25);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+
+  .img-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+    background: rgba(255,255,255,0.03);
+  }
+
+  .img-card-meta {
+    padding: 10px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .img-card-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .img-card:hover .img-card-actions { opacity: 1; }
+
+  .img-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: rgba(8,8,16,0.85);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    backdrop-filter: blur(8px);
+    transition: background 0.15s;
+  }
+
+  .img-action-btn:hover { background: rgba(167,139,250,0.25); }
+
+  /* ── Live Generation Card ── */
+  .gen-preview {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    animation: fadeIn 0.3s ease;
+    position: relative;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .gen-preview img {
+    width: 100%;
+    max-height: 480px;
+    object-fit: contain;
+    display: block;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .gen-preview-meta {
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .gen-prompt-text {
+    font-size: 13px;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.5;
+  }
+
+  .gen-download-btn {
+    flex-shrink: 0;
+    padding: 7px 14px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .gen-download-btn:hover {
+    background: rgba(167,139,250,0.1);
+    border-color: rgba(167,139,250,0.3);
+  }
+
+  /* ── Progress Bar ── */
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transform: translateX(-100%);
+    animation: progress 1.5s ease infinite;
+  }
+
+  @keyframes progress {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* ── Lightbox ── */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.2s ease;
+  }
+
+  .lightbox.show { display: flex; }
+
+  .lightbox-img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  }
+
+  .lightbox-close {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* ── Error Overlay ── */
+  .gen-error {
+    padding: 20px;
+    text-align: center;
+    color: var(--danger);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+
+  /* ── Generating State ── */
+  .generating-placeholder {
+    aspect-ratio: 1;
+    max-height: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: rgba(255,255,255,0.01);
+  }
+
+  .gen-orb {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    animation: orb-pulse 1.8s ease infinite;
+    filter: blur(1px);
+  }
+
+  @keyframes orb-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.12); opacity: 1; }
+  }
+
+  .gen-status-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  /* ── Google Login Button ── */
+  .btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .btn-google:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.15);
+  }
+
+  .btn-google:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-google svg { flex-shrink: 0; }
+
+  /* OAuth status banner */
+  .oauth-status {
+    display: none;
+    padding: 10px 12px;
+    border-radius: 9px;
+    border: 1px solid rgba(167,139,250,0.25);
+    background: rgba(167,139,250,0.07);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    line-height: 1.6;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .oauth-status.show { display: block; }
+  .oauth-status.err  { border-color: rgba(248,113,113,0.25); background: rgba(248,113,113,0.07); color: var(--danger); }
+  .oauth-status.ok   { border-color: rgba(52,211,153,0.25); background: rgba(52,211,153,0.07); color: var(--success); }
+
+  /* Fallback toggle */
+  .fallback-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 6px 0;
+    width: 100%;
+    justify-content: center;
+    transition: color 0.15s;
+  }
+
+  .fallback-toggle:hover { color: var(--text); }
+
+  .fallback-section {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .fallback-section.show { display: flex; }
+
+  /* No accounts empty state */
+  .g-no-accounts {
+    text-align: center;
+    padding: 12px 0 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── Header ── -->
+  <header>
+    <div>
+      <div class="logo">🍌 Banana Studio</div>
+    </div>
+    <span class="logo-sep">·</span>
+    <span class="logo-sub">4WHEELS AI</span>
+    <div class="header-right">
+      <div class="model-badge">GEMINI FLASH IMAGE</div>
+      <div id="headerStatus" class="status-pill disconnected">
+        <div class="status-dot"></div>
+        <span>未登入</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Sidebar ── -->
+  <aside>
+
+    <!-- Login Section -->
+    <div>
+      <p class="section-title">BananaProAI 帳號</p>
+      <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+
+        <!-- Google Login Button -->
+        <button class="btn-google" id="googleLoginBtn" onclick="startGoogleLogin()">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
+            <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" fill="#34A853"/>
+            <path d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332Z" fill="#FBBC05"/>
+            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58Z" fill="#EA4335"/>
+          </svg>
+          使用 Google 登入
+        </button>
+
+        <!-- OAuth progress banner -->
+        <div class="oauth-status" id="oauthStatus"></div>
+
+        <!-- Fallback: email/password -->
+        <button class="fallback-toggle" onclick="toggleFallback()">
+          <span id="fallbackToggleIcon">▾</span>
+          <span>手動輸入帳密</span>
+        </button>
+        <div class="fallback-section" id="fallbackSection">
+          <div class="field" style="margin:0;">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="your@email.com" autocomplete="email" />
+          </div>
+          <div class="field" style="margin:0;">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+          <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">
+            <span id="loginIcon">→</span>
+            <span id="loginLabel">登入</span>
+          </button>
+          <div class="msg" id="loginMsg"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Quick Presets -->
+    <div>
+      <p class="section-title">Prompt 快速套入</p>
+      <div class="card" style="display:flex;flex-direction:column;gap:7px;">
+        <button class="btn btn-secondary" onclick="injectPrompt('A tire shop exterior at golden hour, cinematic, Taiwan street')">輪胎店外觀</button>
+        <button class="btn btn-secondary" onclick="injectPrompt('Close-up of a high-performance sports tire on wet asphalt, dramatic rain, studio lighting')">濕地輪胎特寫</button>
+        <button class="btn btn-secondary" onclick="injectPrompt('Mechanic hands changing a premium alloy wheel rim, workshop background, professional photography')">換輪框工藝</button>
+        <button class="btn btn-secondary" onclick="injectPrompt('Luxury car with aftermarket wheels on mountain road at dusk, Taiwan landscape, cinematic grade')">山路夜景車</button>
+        <button class="btn btn-secondary" onclick="injectPrompt('Modern tire shop interior, clean white space, product display, lifestyle photography')">店面內裝</button>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div style="margin-top:auto;">
+      <p class="section-title">生成設定</p>
+      <div class="card" style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--muted);font-size:12px;">模型</span>
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);">Gemini Flash</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--muted);font-size:12px;">平台</span>
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">BananaProAI</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--muted);font-size:12px;">儲存位置</span>
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">outputs/banana-images</span>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── Main ── -->
+  <main>
+
+    <!-- Prompt Box -->
+    <div class="prompt-card">
+      <p class="section-title" style="margin-bottom:14px;">Prompt</p>
+      <div class="field">
+        <textarea id="prompt" rows="4"
+          placeholder="描述你想生成的圖片... (英文效果最佳)&#10;例：A cinematic tire shop scene at golden hour, Taiwan street, professional photography"
+          oninput="updateCharCount()"
+        ></textarea>
+      </div>
+
+      <!-- Aspect Ratio -->
+      <div>
+        <label>長寬比</label>
+        <div class="ratio-pills">
+          <button class="ratio-pill active" data-ratio="1:1"  onclick="setRatio(this, '1:1')">1:1</button>
+          <button class="ratio-pill" data-ratio="4:3"  onclick="setRatio(this, '4:3')">4:3</button>
+          <button class="ratio-pill" data-ratio="16:9" onclick="setRatio(this, '16:9')">16:9</button>
+          <button class="ratio-pill" data-ratio="9:16" onclick="setRatio(this, '9:16')">9:16（Reels）</button>
+          <button class="ratio-pill" data-ratio="3:4"  onclick="setRatio(this, '3:4')">3:4（IG）</button>
+        </div>
+      </div>
+
+      <div class="prompt-actions">
+        <button class="btn-generate" id="generateBtn" onclick="doGenerate()">
+          <div class="spinner" id="spinner"></div>
+          <span id="generateLabel">✦ 生成圖片</span>
+        </button>
+        <span class="char-count" id="charCount">0 字元</span>
+      </div>
+    </div>
+
+    <!-- Live Result -->
+    <div id="resultArea"></div>
+
+    <!-- Gallery -->
+    <div>
+      <div class="gallery-header">
+        <h2 class="gallery-title">生成記錄</h2>
+        <button class="btn btn-secondary" style="width:auto;padding:7px 14px;font-size:12px;" onclick="loadGallery()">↺ 重新整理</button>
+      </div>
+      <div class="gallery-grid" id="gallery">
+        <div class="gallery-empty">尚無生成記錄</div>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img class="lightbox-img" id="lightboxImg" src="" alt="" />
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+</div>
+
+<script>
+  let selectedRatio = '1:1';
+  let isGenerating = false;
+  let oauthPollTimer = null;
+
+  // ── Init ──────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    checkStatus();
+    loadGallery();
+  });
+
+  // ── Status ────────────────────────────────────
+  async function checkStatus() {
+    try {
+      const res = await fetch('/api/banana/status');
+      const data = await res.json();
+      updateStatusUI(data.loggedIn);
+    } catch {
+      updateStatusUI(false);
+    }
+  }
+
+  function updateStatusUI(loggedIn) {
+    const pill = document.getElementById('headerStatus');
+    if (loggedIn) {
+      pill.className = 'status-pill connected';
+      pill.innerHTML = '<div class="status-dot pulse"></div><span>已連線</span>';
+    } else {
+      pill.className = 'status-pill disconnected';
+      pill.innerHTML = '<div class="status-dot"></div><span>未登入</span>';
+    }
+  }
+
+  // ── Google Login ──────────────────────────────
+  async function startGoogleLogin() {
+    if (oauthPollTimer) return;
+
+    const btn = document.getElementById('googleLoginBtn');
+    btn.disabled = true;
+    setOAuthBanner('pending', '🔐 瀏覽器視窗開啟中...<br/>請在視窗中選擇 Google 帳號完成授權');
+
+    try {
+      const res = await fetch('/api/banana/google-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const { ok, jobId } = await res.json();
+      if (!ok || !jobId) throw new Error('無法啟動登入');
+
+      oauthPollTimer = setInterval(async () => {
+        try {
+          const pr = await fetch(`/api/banana/google-login-status/${jobId}`);
+          const pd = await pr.json();
+
+          if (pd.status === 'pending') {
+            setOAuthBanner('pending', `🔐 ${escHtml(pd.message || '等待授權...')}`);
+          } else if (pd.status === 'success') {
+            clearInterval(oauthPollTimer);
+            oauthPollTimer = null;
+            btn.disabled = false;
+            setOAuthBanner('ok', `✓ ${escHtml(pd.message || 'Google 登入成功')}`);
+            updateStatusUI(true);
+            setTimeout(() => document.getElementById('oauthStatus').classList.remove('show'), 5000);
+          } else {
+            clearInterval(oauthPollTimer);
+            oauthPollTimer = null;
+            btn.disabled = false;
+            setOAuthBanner('err', `⚠ ${escHtml(pd.message || '登入失敗')}`);
+          }
+        } catch { /* network glitch — keep polling */ }
+      }, 2000);
+
+    } catch (e) {
+      btn.disabled = false;
+      setOAuthBanner('err', `⚠ ${escHtml(e.message)}`);
+    }
+  }
+
+  function setOAuthBanner(type, html) {
+    const el = document.getElementById('oauthStatus');
+    el.className = `oauth-status show${type === 'err' ? ' err' : type === 'ok' ? ' ok' : ''}`;
+    el.innerHTML = html;
+  }
+
+  // ── Fallback toggle ───────────────────────────
+  function toggleFallback() {
+    const section = document.getElementById('fallbackSection');
+    const icon = document.getElementById('fallbackToggleIcon');
+    const open = section.classList.toggle('show');
+    icon.textContent = open ? '▴' : '▾';
+  }
+
+  // ── Password Login (fallback) ─────────────────
+  async function doLogin() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('loginBtn');
+    const msg = document.getElementById('loginMsg');
+    const label = document.getElementById('loginLabel');
+    const icon = document.getElementById('loginIcon');
+
+    if (!email || !password) {
+      showMsg(msg, 'err', '請填寫 Email 和密碼');
+      return;
+    }
+
+    btn.disabled = true;
+    icon.textContent = '⟳';
+    label.textContent = '登入中...';
+
+    try {
+      const res = await fetch('/api/banana/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        showMsg(msg, 'ok', data.message || '登入成功');
+        updateStatusUI(true);
+      } else {
+        showMsg(msg, 'err', data.error || '登入失敗');
+      }
+    } catch (e) {
+      showMsg(msg, 'err', '連線失敗：' + e.message);
+    } finally {
+      btn.disabled = false;
+      icon.textContent = '→';
+      label.textContent = '登入';
+    }
+  }
+
+  // ── Generate ──────────────────────────────────
+  async function doGenerate() {
+    if (isGenerating) return;
+
+    const prompt = document.getElementById('prompt').value.trim();
+    if (!prompt) {
+      alert('請輸入 Prompt');
+      return;
+    }
+
+    isGenerating = true;
+    const btn = document.getElementById('generateBtn');
+    const spinner = document.getElementById('spinner');
+    const label = document.getElementById('generateLabel');
+    btn.disabled = true;
+    spinner.classList.add('show');
+    label.textContent = '生成中...';
+
+    // Show generating placeholder
+    document.getElementById('resultArea').innerHTML = `
+      <div class="gen-preview">
+        <div class="progress-bar"><div class="progress-bar-fill"></div></div>
+        <div class="generating-placeholder">
+          <div class="gen-orb"></div>
+          <div class="gen-status-text">
+            Gemini Flash Image 生成中<br/>
+            <span style="font-size:11px;opacity:0.6">BananaProAI · 最長需等候 90 秒</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    try {
+      const res = await fetch('/api/banana/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, aspectRatio: selectedRatio }),
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        showResult(data);
+        loadGallery();
+      } else {
+        document.getElementById('resultArea').innerHTML = `
+          <div class="gen-preview">
+            <div class="gen-error">
+              <div style="font-size:24px;margin-bottom:8px;">⚠</div>
+              ${data.error || '生成失敗'}
+              <br/><br/>
+              <span style="opacity:0.6;">請確認已登入 BananaProAI</span>
+            </div>
+          </div>
+        `;
+      }
+    } catch (e) {
+      document.getElementById('resultArea').innerHTML = `
+        <div class="gen-preview">
+          <div class="gen-error">
+            <div style="font-size:24px;margin-bottom:8px;">⚠</div>
+            連線失敗：${e.message}
+          </div>
+        </div>
+      `;
+    } finally {
+      isGenerating = false;
+      btn.disabled = false;
+      spinner.classList.remove('show');
+      label.textContent = '✦ 生成圖片';
+    }
+  }
+
+  function showResult(data) {
+    const ts = new Date().toLocaleTimeString('zh-TW');
+    document.getElementById('resultArea').innerHTML = `
+      <div class="gen-preview" style="animation:fadeIn 0.4s ease;">
+        <img src="${data.base64}" alt="${data.prompt}" onclick="openLightbox('${data.base64}')" style="cursor:zoom-in;" />
+        <div class="gen-preview-meta">
+          <div class="gen-prompt-text">${escHtml(data.prompt)}</div>
+          <a class="gen-download-btn" href="${data.base64}" download="banana_${Date.now()}.png">
+            ↓ 下載
+          </a>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Gallery ───────────────────────────────────
+  async function loadGallery() {
+    try {
+      const res = await fetch('/api/banana/images');
+      const data = await res.json();
+      const grid = document.getElementById('gallery');
+
+      if (!data.ok || !data.images.length) {
+        grid.innerHTML = '<div class="gallery-empty">尚無生成記錄</div>';
+        return;
+      }
+
+      grid.innerHTML = data.images.map(img => `
+        <div class="img-card" onclick="openLightbox('${img.path}')">
+          <img src="${img.path}" alt="" loading="lazy" />
+          <div class="img-card-actions">
+            <a class="img-action-btn" href="${img.path}" download="${img.filename}" onclick="event.stopPropagation()" title="下載">↓</a>
+          </div>
+          <div class="img-card-meta">${img.filename}</div>
+        </div>
+      `).join('');
+    } catch (e) {
+      console.error('Gallery load error:', e);
+    }
+  }
+
+  // ── UI Helpers ────────────────────────────────
+  function setRatio(el, ratio) {
+    selectedRatio = ratio;
+    document.querySelectorAll('.ratio-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function injectPrompt(text) {
+    const ta = document.getElementById('prompt');
+    ta.value = text;
+    updateCharCount();
+    ta.focus();
+  }
+
+  function updateCharCount() {
+    const len = document.getElementById('prompt').value.length;
+    document.getElementById('charCount').textContent = `${len} 字元`;
+  }
+
+  function showMsg(el, type, text) {
+    el.className = `msg ${type} show`;
+    el.textContent = text;
+    setTimeout(() => el.classList.remove('show'), 4000);
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+
+  function openLightbox(src) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightbox').classList.add('show');
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('show');
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') doGenerate();
+  });
+</script>
+</body>
+</html>

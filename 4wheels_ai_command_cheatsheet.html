@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>4WHEELS AI 指令總表</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+      line-height: 1.75;
+      margin: 0;
+      background: #f6f7f9;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 920px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 44px;
+      border-radius: 18px;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.08);
+    }
+    h1 {
+      font-size: 32px;
+      margin: 0 0 24px;
+      color: #111827;
+      border-bottom: 3px solid #111827;
+      padding-bottom: 14px;
+    }
+    h2 {
+      font-size: 22px;
+      margin-top: 32px;
+      color: #111827;
+    }
+    p {
+      margin: 8px 0;
+    }
+    ul {
+      margin-top: 8px;
+      margin-bottom: 20px;
+      padding-left: 24px;
+    }
+    li {
+      margin: 4px 0;
+    }
+    pre {
+      background: #111827;
+      color: #f9fafb;
+      padding: 16px 18px;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 30px 0;
+    }
+    @media print {
+      body { background: white; }
+      .container {
+        box-shadow: none;
+        margin: 0;
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>4WHEELS AI 指令總表</h1>
+
+<h2>專案位置</h2>
+
+<p>Terminal 先進入專案：</p>
+
+<pre><code class="language-bash">cd &quot;/Volumes/Extreme SSD/4WHEELS-AI&quot;</code></pre>
+
+<hr>
+
+<h1>啟動 AI 系統</h1>
+
+<h2>啟動主系統</h2>
+
+<pre><code class="language-bash">npm run ai</code></pre>
+
+<p>功能：</p>
+<ul>
+<li>建立 / 更新車款資料庫</li>
+<li>六大平台內容生成</li>
+<li>AI Agent 角色生成</li>
+<li>自動判斷車款</li>
+</ul>
+
+<hr>
+
+<h1>標題生成器</h1>
+
+<h2>啟動標題生成</h2>
+
+<pre><code class="language-bash">npm run title</code></pre>
+
+<p>功能：</p>
+<ul>
+<li>Threads 爆文標題</li>
+<li>TikTok Hook</li>
+<li>YouTube 點擊標題</li>
+<li>IG Reels 標題</li>
+</ul>
+
+<hr>
+
+<h1>常用 Terminal 指令</h1>
+
+<h2>查看目前位置</h2>
+
+<pre><code class="language-bash">pwd</code></pre>
+
+<hr>
+
+<h2>查看資料夾內容</h2>
+
+<pre><code class="language-bash">ls</code></pre>
+
+<hr>
+
+<h2>開啟目前資料夾</h2>
+
+<pre><code class="language-bash">open .</code></pre>
+
+<hr>
+
+<h2>開啟 package.json</h2>
+
+<pre><code class="language-bash">open package.json</code></pre>
+
+<hr>
+
+<h1>AI 系統架構</h1>
+
+<h2>車款資料庫</h2>
+
+<p>位置：</p>
+
+<pre><code class="language-txt">knowledge/cars/</code></pre>
+
+<p>用途：</p>
+<ul>
+<li>儲存各車款資料</li>
+<li>原廠輪胎規格</li>
+<li>載重指數</li>
+<li>車型特性</li>
+</ul>
+
+<hr>
+
+<h2>平台知識庫</h2>
+
+<p>位置：</p>
+
+<pre><code class="language-txt">knowledge/platforms/</code></pre>
+
+<p>包含：</p>
+
+<pre><code class="language-txt">instagram.txt
+facebook.txt
+youtube.txt
+line-voom.txt
+tiktok.txt
+threads.txt</code></pre>
+
+<p>用途：</p>
+<ul>
+<li>記錄平台流量特性</li>
+<li>記錄受眾偏好</li>
+<li>記錄平台語氣</li>
+</ul>
+
+<hr>
+
+<h2>AI Agent 人格</h2>
+
+<p>位置：</p>
+
+<pre><code class="language-txt">knowledge/agents/</code></pre>
+
+<p>包含：</p>
+
+<pre><code class="language-txt">tire-master.txt
+female-driver.txt
+car-modifier.txt
+social-editor.txt
+short-video-director.txt</code></pre>
+
+<p>用途：</p>
+<ul>
+<li>控制 AI 語氣</li>
+<li>控制內容人格</li>
+<li>控制角色視角</li>
+</ul>
+
+<hr>
+
+<h2>系統記憶</h2>
+
+<p>位置：</p>
+
+<pre><code class="language-txt">system/</code></pre>
+
+<p>包含：</p>
+
+<pre><code class="language-txt">brand.md
+content-rules.md
+viral-psychology.md
+shorts-structure.md</code></pre>
+
+<p>用途：</p>
+<ul>
+<li>AI 品牌記憶</li>
+<li>流量規則</li>
+<li>爆文心理學</li>
+<li>Shorts 節奏</li>
+</ul>
+
+<hr>
+
+<h1>常用工作流程</h1>
+
+<h2>建立新車款資料</h2>
+
+<pre><code class="language-bash">npm run ai</code></pre>
+
+<p>選：</p>
+
+<pre><code class="language-txt">1</code></pre>
+
+<p>輸入：</p>
+
+<pre><code class="language-txt">Toyota RAV4</code></pre>
+
+<p>結果：</p>
+<ul>
+<li>AI 自動查詢車款</li>
+<li>建立 knowledge/cars 資料</li>
+</ul>
+
+<hr>
+
+<h2>生成六平台內容</h2>
+
+<pre><code class="language-bash">npm run ai</code></pre>
+
+<p>選：</p>
+
+<pre><code class="language-txt">2</code></pre>
+
+<p>輸入：</p>
+
+<pre><code class="language-txt">Luxgen N7輪胎怎麼選？</code></pre>
+
+<p>再選代理角色。</p>
+
+<p>結果：</p>
+<ul>
+<li>AI 自動判斷車款</li>
+<li>自動讀知識庫</li>
+<li>生成六平台內容</li>
+</ul>
+
+<hr>
+
+<h2>生成爆款標題</h2>
+
+<pre><code class="language-bash">npm run title</code></pre>
+
+<p>輸入：</p>
+
+<pre><code class="language-txt">好Ｘ多輪胎真的划算嗎？</code></pre>
+
+<p>結果：</p>
+<ul>
+<li>Threads 標題</li>
+<li>TikTok Hook</li>
+<li>YouTube 標題</li>
+<li>IG Reels 標題</li>
+</ul>
+
+<hr>
+
+<h1>目前 AI 系統能力</h1>
+
+<p>目前系統已具備：</p>
+
+<ul>
+<li>六平台內容生成</li>
+<li>平台流量理解</li>
+<li>AI Agent 人格</li>
+<li>車款資料庫</li>
+<li>自動車款偵測</li>
+<li>品牌系統記憶</li>
+<li>台灣社群語感</li>
+<li>爆文心理學</li>
+<li>短影音節奏</li>
+</ul>
+
+<hr>
+
+<h1>未來可擴充方向</h1>
+
+<p>之後可以新增：</p>
+
+<pre><code class="language-txt">npm run shorts
+npm run research
+npm run wheel
+npm run tire
+npm run viral</code></pre>
+
+<p>以及：</p>
+
+<ul>
+<li>AI 自動研究熱門話題</li>
+<li>自動更新知識庫</li>
+<li>短影音腳本生成</li>
+<li>鏡位與分鏡生成</li>
+<li>自動生成圖片 Prompt</li>
+<li>台灣車圈情報系統</li>
+</ul>
+  </main>
+</body>
+</html>

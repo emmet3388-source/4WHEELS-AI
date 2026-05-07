@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Content Library — 4WHEELS AI</title>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #07080f;
+      --surface:   rgba(255,255,255,0.028);
+      --border:    rgba(255,255,255,0.07);
+      --accent:    #00c853;
+      --accent-dim:rgba(0,200,83,0.12);
+      --text:      #dde1f0;
+      --text-muted:#525870;
+      --text-dim:  #2e3450;
+      --sidebar-w: 320px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                   "Segoe UI", "Noto Sans TC", sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Background ── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .bg::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+    }
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(130px); opacity: 0.14;
+    }
+    .orb-1 { width:600px;height:600px;background:radial-gradient(circle,#00c853,transparent 70%);top:-240px;left:-180px; }
+    .orb-2 { width:480px;height:480px;background:radial-gradient(circle,#5038ff,transparent 70%);top:30%;right:-160px; }
+
+    /* ── Nav ── */
+    .nav {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 14px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      flex-shrink: 0;
+    }
+    .nav-link {
+      padding: 7px 16px;
+      border-radius: 8px;
+      color: #3e4460;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-link:hover { color: #dde1f0; background: rgba(255,255,255,0.04); }
+    .nav-link.active { color: var(--accent); background: var(--accent-dim); }
+
+    /* ── App shell ── */
+    .app {
+      position: relative; z-index: 1;
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ────────────────────────────────
+       Sidebar
+    ──────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .sidebar-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .sidebar-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .search-wrap {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .search-input {
+      width: 100%;
+      padding: 9px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input::placeholder { color: var(--text-dim); }
+    .search-input:focus { border-color: rgba(0,200,83,0.35); }
+
+    .file-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    /* scrollbar */
+    .file-list::-webkit-scrollbar { width: 4px; }
+    .file-list::-webkit-scrollbar-track { background: transparent; }
+    .file-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+    .date-group { margin-bottom: 4px; }
+
+    .date-label {
+      padding: 8px 20px 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .file-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 16px;
+      margin: 1px 8px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border: 1px solid transparent;
+    }
+    .file-item:hover {
+      background: rgba(255,255,255,0.04);
+    }
+    .file-item.active {
+      background: var(--accent-dim);
+      border-color: rgba(0,200,83,0.2);
+    }
+
+    .file-icon {
+      font-size: 16px;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .file-meta { flex: 1; min-width: 0; }
+
+    .file-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.4;
+    }
+    .file-item.active .file-title { color: var(--accent); }
+
+    .file-tags {
+      display: flex;
+      gap: 5px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+    }
+    .tag.mode { background: rgba(0,200,83,0.08); color: #00a844; }
+    .tag.time { font-family: "SF Mono","Fira Code",monospace; }
+
+    /* ────────────────────────────────
+       Content area
+    ──────────────────────────────── */
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .content-header {
+      padding: 18px 28px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .content-filename {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .content-filepath {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: "SF Mono","Fira Code",monospace;
+      margin-top: 3px;
+    }
+
+    .copy-btn {
+      padding: 7px 16px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,200,83,0.2);
+      border-radius: 8px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .copy-btn:hover {
+      background: rgba(0,200,83,0.2);
+      border-color: rgba(0,200,83,0.4);
+    }
+    .copy-btn.copied {
+      color: #00c853;
+      background: rgba(0,200,83,0.18);
+    }
+
+    .content-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 32px;
+    }
+    .content-body::-webkit-scrollbar { width: 4px; }
+    .content-body::-webkit-scrollbar-track { background: transparent; }
+    .content-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+    .content-text {
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.9;
+      color: #b8c0d8;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                   "Segoe UI", "Noto Sans TC", sans-serif;
+    }
+
+    /* empty / loading states */
+    .state-msg {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-dim);
+      font-size: 14px;
+      gap: 10px;
+      text-align: center;
+    }
+    .state-icon { font-size: 36px; opacity: 0.4; }
+
+    /* ── Loading spinner ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(0,200,83,0.25);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+
+  <!-- ── Nav ── -->
+  <nav class="nav">
+    <a href="/"        class="nav-link">⚡ AI Studio</a>
+    <a href="https://4wheels.com.tw/product_tire_list" class="nav-link" target="_blank" rel="noopener noreferrer">🛞 輪胎搜尋</a>
+    <a href="/library"  class="nav-link active">📚 Library</a>
+    <a href="/banana-studio.html" class="nav-link">🍌 Banana Studio</a>
+  </nav>
+
+  <div class="app">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">📚 Content Library</div>
+        <div class="sidebar-count" id="totalCount">載入中...</div>
+      </div>
+
+      <div class="search-wrap">
+        <input
+          class="search-input"
+          id="searchInput"
+          type="text"
+          placeholder="搜尋檔案..."
+          oninput="filterFiles()"
+        />
+      </div>
+
+      <div class="file-list" id="fileList"></div>
+    </aside>
+
+    <!-- ── Content ── -->
+    <main class="content">
+      <div class="content-header" id="contentHeader" style="display:none">
+        <div>
+          <div class="content-filename" id="contentFilename"></div>
+          <div class="content-filepath" id="contentFilepath"></div>
+        </div>
+        <button class="copy-btn" id="copyBtn" onclick="copyContent()">複製全文</button>
+      </div>
+
+      <div class="content-body" id="contentBody">
+        <div class="state-msg">
+          <div class="state-icon">📂</div>
+          <div>選擇左側檔案查看內容</div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+<script>
+const MODE_LABELS = {
+  "1": "車款資料庫", "2": "六大平台",
+  "3": "短影音腳本", "4": "爆點Hook",
+};
+const AGENT_LABELS = {
+  "tire-master": "老師傅", "female-driver": "女車主",
+  "car-modifier": "改裝玩家", "social-editor": "小編",
+  "short-video-director": "導演",
+};
+
+let allFiles   = [];
+let activeFile = null;
+
+// ── 解析檔名 ──────────────────────────────────
+function parseFilename(filename) {
+  const name  = filename.replace(/\.txt$/, "");
+  const parts = name.split("_");
+
+  if (parts.length < 3) return { mode: "", agent: "", title: name, time: "" };
+
+  const rawMode  = parts[0];
+  const rawAgent = parts[1];
+  const rawTime  = parts[parts.length - 1];
+  const rawTitle = parts.slice(2, -1).join("_");
+
+  const timeStr = rawTime.length === 6
+    ? `${rawTime.slice(0,2)}:${rawTime.slice(2,4)}:${rawTime.slice(4,6)}`
+    : rawTime;
+
+  return {
+    mode:  MODE_LABELS[rawMode]  ?? rawMode,
+    agent: AGENT_LABELS[rawAgent] ?? rawAgent,
+    title: rawTitle || name,
+    time:  timeStr,
+  };
+}
+
+function getProjectFileLabel(file) {
+  const labels = {
+    "instagram.txt": "Instagram 貼文",
+    "facebook.txt": "Facebook 貼文",
+    "youtube.txt": "YouTube 貼文",
+    "line-voom.txt": "LINE VOOM 貼文",
+    "tiktok.txt": "TikTok 貼文",
+    "threads.txt": "Threads 貼文",
+    "hooks.txt": "Hooks",
+    "image-prompt.txt": "圖片 Prompt",
+    "openai-research.txt": "OpenAI 搜尋資料",
+    "grok-reviewed-data.txt": "Grok 審核資料",
+    "full-output.txt": "完整輸出",
+  };
+
+  return labels[file.filename] || file.filename.replace(/\.txt$/, "");
+}
+
+function getDisplayMeta(file) {
+  if (file.kind === "project") {
+    const projectTitle = (file.projectName || "")
+      .replace(/^\d{4}-\d{2}-\d{2}_/, "")
+      .replace(/-/g, " ");
+
+    return {
+      title: getProjectFileLabel(file),
+      tags: [
+        "專案",
+        projectTitle || file.projectName || "未命名專案",
+      ],
+    };
+  }
+
+  const parsed = parseFilename(file.filename);
+  return {
+    title: parsed.title || file.filename,
+    tags: [parsed.mode, parsed.agent, parsed.time].filter(Boolean),
+  };
+}
+
+// ── 初始載入 ──────────────────────────────────
+async function loadLibrary() {
+  try {
+    const res  = await fetch("/api/library");
+    const data = await res.json();
+    allFiles   = data.files || [];
+
+    document.getElementById("totalCount").textContent =
+      `共 ${allFiles.length} 個檔案`;
+
+    renderList(allFiles);
+
+    if (allFiles.length > 0) selectFile(allFiles[0]);
+  } catch (e) {
+    document.getElementById("totalCount").textContent = "載入失敗";
+    document.getElementById("fileList").innerHTML =
+      `<div class="state-msg" style="padding:40px 20px">
+        <div class="state-icon">⚠️</div><div>無法連線至伺服器</div>
+      </div>`;
+  }
+}
+
+// ── 渲染列表 ──────────────────────────────────
+function renderList(files) {
+  const container = document.getElementById("fileList");
+  if (files.length === 0) {
+    container.innerHTML = `<div class="state-msg" style="padding:40px 20px">
+      <div class="state-icon">🗂</div><div>找不到符合的檔案</div>
+    </div>`;
+    return;
+  }
+
+  // 依日期分組
+  const groups = {};
+  for (const f of files) {
+    if (!groups[f.date]) groups[f.date] = [];
+    groups[f.date].push(f);
+  }
+
+  const sortedDates = Object.keys(groups).sort().reverse();
+
+  container.innerHTML = sortedDates.map(date => {
+    const items = groups[date].map(f => fileItemHTML(f)).join("");
+    return `<div class="date-group">
+      <div class="date-label">${date}</div>
+      ${items}
+    </div>`;
+  }).join("");
+
+  // 綁定點擊
+  container.querySelectorAll(".file-item").forEach(el => {
+    el.addEventListener("click", () => {
+      selectFile(allFiles.find(f => f.path === el.dataset.path));
+    });
+  });
+
+  // 還原 active 狀態
+  if (activeFile) {
+    const el = container.querySelector(`[data-path="${CSS.escape(activeFile.path)}"]`);
+    el?.classList.add("active");
+  }
+}
+
+function fileItemHTML(f) {
+  const meta = getDisplayMeta(f);
+  const size = f.size > 1024
+    ? `${(f.size / 1024).toFixed(1)} KB`
+    : `${f.size} B`;
+
+  const tags = meta.tags
+    .map((tag, index) => `<span class="tag ${index === 0 ? "mode" : ""}">${escapeHtml(tag)}</span>`)
+    .join("");
+
+  return `<div class="file-item" data-path="${escapeAttr(f.path)}">
+    <div class="file-icon">📄</div>
+    <div class="file-meta">
+      <div class="file-title">${escapeHtml(meta.title || f.filename)}</div>
+      <div class="file-tags">${tags}<span class="tag time">${size}</span></div>
+    </div>
+  </div>`;
+}
+
+// ── 選取檔案 ──────────────────────────────────
+async function selectFile(file) {
+  if (!file) return;
+  activeFile = file;
+
+  // 更新 sidebar active
+  document.querySelectorAll(".file-item").forEach(el => {
+    el.classList.toggle("active", el.dataset.path === file.path);
+  });
+
+  // 更新 header
+  const meta = getDisplayMeta(file);
+  document.getElementById("contentFilename").textContent =
+    meta.title || file.filename;
+  document.getElementById("contentFilepath").textContent = file.path;
+  document.getElementById("contentHeader").style.display = "flex";
+
+  // 重置 copy button
+  const copyBtn = document.getElementById("copyBtn");
+  copyBtn.textContent = "複製全文";
+  copyBtn.classList.remove("copied");
+
+  // 顯示載入中
+  document.getElementById("contentBody").innerHTML =
+    `<div class="state-msg"><div class="state-icon"><span class="spinner"></span></div><div>載入中...</div></div>`;
+
+  try {
+    const res  = await fetch("/api/library/file?p=" + encodeURIComponent(file.path));
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    document.getElementById("contentBody").innerHTML =
+      `<div class="content-text">${escapeHtml(data.content)}</div>`;
+  } catch (e) {
+    document.getElementById("contentBody").innerHTML =
+      `<div class="state-msg"><div class="state-icon">⚠️</div><div>載入失敗：${escapeHtml(e.message)}</div></div>`;
+  }
+}
+
+// ── 搜尋過濾 ──────────────────────────────────
+function filterFiles() {
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  const filtered = q
+    ? allFiles.filter(f => {
+        const haystack = [
+          f.filename,
+          f.date,
+          f.path,
+          f.projectName || "",
+          getProjectFileLabel(f),
+        ].join(" ").toLowerCase();
+        return haystack.includes(q);
+      })
+    : allFiles;
+  renderList(filtered);
+}
+
+// ── 複製全文 ──────────────────────────────────
+function copyContent() {
+  const el = document.querySelector(".content-text");
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const btn = document.getElementById("copyBtn");
+    btn.textContent = "已複製 ✓";
+    btn.classList.add("copied");
+    setTimeout(() => {
+      btn.textContent = "複製全文";
+      btn.classList.remove("copied");
+    }, 2000);
+  });
+}
+
+// ── 工具 ──────────────────────────────────────
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function escapeAttr(str) {
+  return String(str).replace(/"/g, "&quot;");
+}
+
+loadLibrary();
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{
+  "name": "4wheels-ai",
+  "version": "1.0.0",
+  "description": "4WHEELS AI Marketing Agent System",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "ai": "node api/generate-content.js",
+    "title": "node api/generate-title.js",
+    "shorts": "node api/generate-shorts.js",
+    "hooks": "node api/generate-hooks.js",
+    "web": "node api/server.js",
+    "web:watch": "node scripts/server-watch.js",
+    "web:service:start": "launchctl load ~/Library/LaunchAgents/com.4wheels.ai.web.plist 2>/dev/null || true && launchctl start com.4wheels.ai.web",
+    "web:service:stop": "launchctl stop com.4wheels.ai.web 2>/dev/null || true && launchctl unload ~/Library/LaunchAgents/com.4wheels.ai.web.plist 2>/dev/null || true",
+    "web:logs": "tail -f ~/Library/Logs/4WHEELS-AI/web.out.log ~/Library/Logs/4WHEELS-AI/web.err.log",
+    "url:install": "scripts/install-socialeditor-url.sh",
+    "url:uninstall": "scripts/uninstall-socialeditor-url.sh",
+    "start": "node api/server.js",
+    "research": "node api/generate-content.js",
+    "viral": "node api/generate-title.js",
+    "mechanic": "node api/grok-mechanic.js",
+    "recommend": "node api/grok-recommend.js",
+    "image": "node api/generate-image.js"
+  },
+  "keywords": [
+    "ai",
+    "marketing",
+    "automotive",
+    "tires",
+    "social-media",
+    "shorts",
+    "threads",
+    "tiktok",
+    "reels",
+    "youtube-shorts",
+    "hooks",
+    "viral"
+  ],
+  "author": "4WHEELS AI",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.1.0",
+    "openai": "^6.35.0",
+    "playwright": "^1.59.1"
+  }
+}
