@@ -117,6 +117,21 @@
   .nav-link:hover { color: var(--fg); background: rgba(255,255,255,0.05); }
   .nav-link.active { color: var(--accent); background: rgba(167,139,250,0.1); }
 
+  /* ── Credits ── */
+  .credit-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+    font-family: 'DM Mono', monospace;
+    padding: 3px 8px; border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted); background: transparent;
+    white-space: nowrap;
+  }
+  .credit-chip .dot { width:5px; height:5px; border-radius:50%; background: rgba(232,232,240,0.15); flex-shrink:0; }
+  .credit-chip.ok .dot { background: #34d399; }
+  .credit-chip.ok { color: rgba(232,232,240,0.7); }
+  .credit-chip.err .dot { background: #f87171; }
+
   .header-right {
     margin-left: auto;
     display: flex;
@@ -820,6 +835,8 @@
       <a href="/banana-studio.html" class="nav-link active">🍌 Banana Studio</a>
     </nav>
     <div class="header-right">
+      <span class="credit-chip" id="chip-openai"><span class="dot"></span>OpenAI</span>
+      <span class="credit-chip" id="chip-xai"><span class="dot"></span>Grok</span>
       <div class="model-badge">GEMINI FLASH IMAGE</div>
       <div id="headerStatus" class="status-pill disconnected">
         <div class="status-dot"></div>
@@ -1002,6 +1019,30 @@
   let selectedCount = 1;
   let isGenerating = false;
   let oauthPollTimer = null;
+
+  // ── Credits Widget ────────────────────────────
+  (async function loadCredits() {
+    try {
+      const data = await fetch('/api/credits').then(r => r.json());
+      const setChip = (id, ok, label) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = `credit-chip ${ok ? 'ok' : 'err'}`;
+        el.innerHTML = `<span class="dot"></span>${label}`;
+      };
+      setChip('chip-openai', data.openai?.ok, 'OpenAI');
+      setChip('chip-xai',    data.xai?.ok,    'Grok');
+      // BananaProAI points shown in the status pill already; update it here too
+      const pts = data.banana?.points;
+      if (pts !== null && pts !== undefined) {
+        const pill = document.getElementById('headerStatus');
+        if (pill) {
+          const span = pill.querySelector('span');
+          if (span && pill.classList.contains('connected')) span.textContent = `已連線 · ${pts} pts`;
+        }
+      }
+    } catch {}
+  })();
 
   // ── Init ──────────────────────────────────────
   window.addEventListener('DOMContentLoaded', () => {

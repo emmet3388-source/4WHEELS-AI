@@ -2473,6 +2473,32 @@ app.use('/outputs/banana-images', express.static(
   path.join(__dirname, '../outputs/banana-images')
 ));
 
+// ── GET /api/credits ──────────────────────────────────────────────────────────
+app.get('/api/credits', async (req, res) => {
+  const [openai, xai, banana] = await Promise.allSettled([
+    fetch('https://api.openai.com/v1/models', {
+      headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+    }).then(r => ({ ok: r.ok })).catch(() => ({ ok: false })),
+
+    fetch('https://api.x.ai/v1/api-key', {
+      headers: { Authorization: `Bearer ${process.env.XAI_API_KEY}` },
+    }).then(async r => {
+      const d = await r.json();
+      return { ok: r.ok, name: d.name || 'grok-4' };
+    }).catch(() => ({ ok: false })),
+
+    fetch(`http://127.0.0.1:3000/api/banana/points`)
+      .then(r => r.json()).catch(() => ({ ok: false, points: null })),
+  ]);
+
+  res.json({
+    ok: true,
+    openai: openai.value || { ok: false },
+    xai:    xai.value    || { ok: false },
+    banana: banana.value || { ok: false, points: null },
+  });
+});
+
 // ─────────────────────────────────────────────
 // 啟動
 // ─────────────────────────────────────────────

@@ -374,6 +374,39 @@ router.post('/generate', async (req, res) => {
   }
 });
 
+// ── GET /api/banana/points ────────────────────────────────────────────────────
+let pointsCache = null; // { points, ts }
+const POINTS_TTL = 5 * 60 * 1000; // 5 minutes
+
+router.get('/points', async (req, res) => {
+  if (pointsCache && Date.now() - pointsCache.ts < POINTS_TTL) {
+    return res.json({ ok: true, points: pointsCache.points, cached: true });
+  }
+  let page;
+  try {
+    const ctx = await getBrowserContext();
+    const cookies = await ctx.cookies('https://bananaproai.com');
+    const loggedIn = cookies.some(c => c.name.includes('session-token') || c.name.includes('next-auth'));
+    if (!loggedIn) return res.json({ ok: true, points: null, loggedIn: false });
+
+    page = await ctx.newPage();
+    await page.goto(`${BASE_URL}/image/gemini-3-1-flash-image/`, {
+      waitUntil: 'networkidle', timeout: 20000,
+    });
+    const points = await page.evaluate(() => {
+      const el = Array.from(document.querySelectorAll('div'))
+        .find(e => e.className?.includes('gradient') && /^\d+$/.test(e.textContent.trim()));
+      return el ? parseInt(el.textContent.trim()) : null;
+    });
+    await page.close();
+    if (points !== null) pointsCache = { points, ts: Date.now() };
+    res.json({ ok: true, points, loggedIn: true });
+  } catch (err) {
+    if (page) await page.close().catch(() => {});
+    res.json({ ok: false, points: null, error: err.message });
+  }
+});
+
 // ── GET /api/banana/images ────────────────────────────────────────────────────
 router.get('/images', (req, res) => {
   try {

@@ -61,6 +61,37 @@
     .nav-link:hover { color: #dde1f0; background: rgba(255,255,255,0.04); }
     .nav-link.active { color: #00c853; background: rgba(0,200,83,0.07); }
 
+    /* ── Credits Bar ── */
+    .credits-bar {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .credit-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.45);
+      background: rgba(255,255,255,0.03);
+      white-space: nowrap;
+    }
+    .credit-chip .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #3a4060;
+      flex-shrink: 0;
+    }
+    .credit-chip.ok .dot { background: #00c853; }
+    .credit-chip.ok { color: rgba(255,255,255,0.6); }
+    .credit-chip.err .dot { background: #f87171; }
+
     /* ── Hero ── */
     .hero { text-align: center; padding: 80px 0 52px; }
 
@@ -619,6 +650,11 @@
     <a href="https://4wheels.com.tw/product_tire_list" class="nav-link" target="_blank" rel="noopener noreferrer">🛞 輪胎搜尋</a>
     <a href="/library" class="nav-link">📚 Library</a>
     <a href="/banana-studio.html" class="nav-link">🍌 Banana Studio</a>
+    <div class="credits-bar" id="credits-bar">
+      <span class="credit-chip" id="chip-openai"><span class="dot"></span>OpenAI</span>
+      <span class="credit-chip" id="chip-xai"><span class="dot"></span>Grok</span>
+      <span class="credit-chip" id="chip-banana"><span class="dot"></span>🍌</span>
+    </div>
   </nav>
 
   <div class="container">
@@ -786,6 +822,24 @@
 </div>
 
 <script>
+// ── Credits Widget ────────────────────────────────────────────────────────────
+(async function loadCredits() {
+  try {
+    const data = await fetch('/api/credits').then(r => r.json());
+    const setChip = (id, ok, label) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = `credit-chip ${ok ? 'ok' : 'err'}`;
+      el.innerHTML = `<span class="dot"></span>${label}`;
+    };
+    setChip('chip-openai', data.openai?.ok, 'OpenAI');
+    setChip('chip-xai',    data.xai?.ok,    'Grok');
+    const pts = data.banana?.points;
+    setChip('chip-banana', data.banana?.ok,
+      pts !== null && pts !== undefined ? `🍌 ${pts}` : '🍌 未登入');
+  } catch {}
+})();
+
 // ── 複製輸出 ────────────────────────────────────────────────────────
 function copyOutput(outputId, btnId) {
   const text = document.getElementById(outputId).textContent;
